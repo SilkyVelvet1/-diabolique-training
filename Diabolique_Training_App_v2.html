@@ -1,0 +1,1190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="Diabolique">
+<meta name="theme-color" content="#0a0a0a">
+<title>Diabolique Training</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body { background: #0a0a0a; color: #f0e6e6; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 15px; min-height: 100vh; }
+
+  /* Header */
+  .header { background: #0f0f0f; border-bottom: 1px solid #1f1f1f; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
+  .header-title { font-size: 22px; font-weight: 700; letter-spacing: 3px; background: linear-gradient(135deg, #ff2d55, #c0305a); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  .header-day { font-size: 11px; color: #666; letter-spacing: 2px; text-transform: uppercase; }
+
+  /* Nav */
+  .nav { display: flex; background: #0f0f0f; border-bottom: 1px solid #1f1f1f; overflow-x: auto; scrollbar-width: none; }
+  .nav::-webkit-scrollbar { display: none; }
+  .nav-btn { flex: 0 0 auto; padding: 12px 18px; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: #555; border: none; background: none; cursor: pointer; border-bottom: 2px solid transparent; white-space: nowrap; }
+  .nav-btn.active { color: #c0305a; border-bottom-color: #c0305a; }
+
+  /* Main content */
+  .content { padding: 20px; max-width: 600px; margin: 0 auto; }
+
+  /* Day header */
+  .day-header { background: #1a0508; border-left: 3px solid #c0305a; padding: 16px 20px; margin-bottom: 20px; border-radius: 0 4px 4px 0; }
+  .day-header .phase-label { font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: #c0305a; margin-bottom: 4px; }
+  .day-header .day-title { font-size: 22px; font-weight: 700; color: #f0e6e6; margin-bottom: 4px; }
+  .day-header .day-focus { font-size: 13px; color: #888; }
+
+  /* Exercise card */
+  .exercise-card { background: #111; border: 1px solid #1f1f1f; border-radius: 8px; padding: 16px; margin-bottom: 12px; }
+  .exercise-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+  .exercise-name { font-size: 15px; font-weight: 600; color: #f0e6e6; }
+  .exercise-meta { font-size: 12px; color: #888; margin-top: 2px; }
+  .exercise-target { text-align: right; }
+  .target-weight { font-size: 20px; font-weight: 700; color: #ff6b9d; }
+  .target-label { font-size: 10px; color: #555; letter-spacing: 1px; text-transform: uppercase; }
+
+  /* Set logger */
+  .sets-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(70px, 1fr)); gap: 8px; margin-bottom: 12px; }
+  .set-box { background: #0a0a0a; border: 1px solid #1f1f1f; border-radius: 6px; padding: 10px 8px; text-align: center; cursor: pointer; transition: all 0.2s; }
+  .set-box.completed { background: #1a0508; border-color: #c0305a; }
+  .set-box.completed .set-num { color: #c0305a; }
+  .set-num { font-size: 10px; color: #555; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 4px; }
+  .set-reps { font-size: 18px; font-weight: 700; color: #f0e6e6; }
+  .set-check { font-size: 16px; color: #c0305a; display: none; }
+  .set-box.completed .set-reps { display: none; }
+  .set-box.completed .set-check { display: block; }
+
+  /* Weight input */
+  .weight-row { display: flex; align-items: center; gap: 10px; }
+  .weight-input { flex: 1; background: #0a0a0a; border: 1px solid #1f1f1f; border-radius: 6px; padding: 10px 14px; color: #f0e6e6; font-size: 16px; text-align: center; }
+  .weight-input:focus { outline: none; border-color: #c0305a; }
+  .weight-btn { background: #1a0508; border: 1px solid #c0305a; border-radius: 6px; color: #ff6b9d; font-size: 18px; width: 40px; height: 40px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+  .weight-unit { font-size: 12px; color: #555; }
+
+  /* Progress indicator */
+  .overload-badge { display: inline-flex; align-items: center; gap: 4px; background: #0a1a0a; border: 1px solid #2a4a2a; border-radius: 4px; padding: 3px 8px; font-size: 11px; color: #4caf50; margin-top: 8px; }
+
+  /* Rest timer */
+  .rest-timer { background: #1a0508; border: 1px solid #2a0510; border-radius: 8px; padding: 16px; margin-bottom: 20px; text-align: center; display: none; }
+  .rest-timer.active { display: block; }
+  .timer-display { font-size: 48px; font-weight: 700; color: #ff6b9d; font-variant-numeric: tabular-nums; }
+  .timer-label { font-size: 11px; color: #666; letter-spacing: 2px; text-transform: uppercase; margin-top: 4px; }
+  .timer-btn { background: #c0305a; border: none; border-radius: 6px; color: white; padding: 10px 24px; font-size: 14px; cursor: pointer; margin-top: 12px; letter-spacing: 1px; }
+
+  /* Workout complete */
+  .complete-banner { background: linear-gradient(135deg, #1a0508, #0a1a0a); border: 1px solid #c0305a; border-radius: 8px; padding: 24px; text-align: center; margin-bottom: 20px; display: none; }
+  .complete-banner.show { display: block; }
+  .complete-title { font-size: 24px; font-weight: 700; color: #ff6b9d; margin-bottom: 8px; }
+  .complete-sub { font-size: 13px; color: #888; }
+
+  /* Progress overview */
+  .progress-section { margin-bottom: 24px; }
+  .progress-title { font-size: 13px; color: #888; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 12px; }
+  .progress-row { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+  .progress-label { font-size: 12px; color: #888; width: 140px; flex-shrink: 0; }
+  .progress-bar-bg { flex: 1; background: #1a1a1a; height: 4px; border-radius: 2px; }
+  .progress-bar-fill { height: 4px; border-radius: 2px; background: linear-gradient(90deg, #c0305a, #ff6b9d); transition: width 0.5s; }
+  .progress-val { font-size: 12px; color: #ff6b9d; width: 60px; text-align: right; }
+
+  /* Week calendar strip */
+  .week-strip { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; margin-bottom: 20px; }
+  .week-day { background: #111; border: 1px solid #1f1f1f; border-radius: 6px; padding: 10px 4px; text-align: center; cursor: pointer; }
+  .week-day.today { border-color: #c0305a; background: #1a0508; }
+  .week-day.done { background: #0a1a0a; border-color: #2a4a2a; }
+  .week-day-name { font-size: 9px; color: #555; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 4px; }
+  .week-day.today .week-day-name { color: #c0305a; }
+  .week-day.done .week-day-name { color: #4caf50; }
+  .week-day-icon { font-size: 16px; }
+
+  /* Notification setup */
+  .setup-card { background: #111; border: 1px solid #1f1f1f; border-radius: 8px; padding: 20px; margin-bottom: 16px; }
+  .setup-card h3 { font-size: 16px; font-weight: 600; color: #ff6b9d; margin-bottom: 8px; }
+  .setup-card p { font-size: 13px; color: #888; line-height: 1.6; margin-bottom: 16px; }
+  .setup-btn { background: #c0305a; border: none; border-radius: 8px; color: white; padding: 14px 24px; font-size: 15px; cursor: pointer; width: 100%; font-weight: 600; letter-spacing: 1px; }
+  .setup-btn.secondary { background: #1f1f1f; color: #888; margin-top: 8px; }
+
+  /* Settings */
+  .settings-row { display: flex; justify-content: space-between; align-items: center; padding: 14px 0; border-bottom: 1px solid #1a1a1a; }
+  .settings-label { font-size: 14px; color: #f0e6e6; }
+  .settings-sub { font-size: 12px; color: #555; margin-top: 2px; }
+  .settings-value { font-size: 14px; color: #ff6b9d; }
+  select.settings-select { background: #1f1f1f; border: 1px solid #2f2f2f; border-radius: 6px; color: #f0e6e6; padding: 8px 12px; font-size: 14px; }
+
+  /* Hyrox specific */
+  .hyrox-card { background: #0f0f0a; border: 1px solid #2a2a1a; border-top: 2px solid #ffc107; border-radius: 8px; padding: 16px; margin-bottom: 12px; }
+  .hyrox-card .exercise-name { color: #ffc107; }
+  .hyrox-card .target-weight { color: #ffc107; }
+
+  /* Phase indicator */
+  .phase-bar { display: flex; gap: 4px; margin-bottom: 20px; }
+  .phase-segment { flex: 1; height: 4px; border-radius: 2px; background: #1a1a1a; }
+  .phase-segment.active { background: #c0305a; }
+  .phase-segment.done { background: #2a4a2a; }
+
+  /* Bottom safe area for iPhone */
+  .bottom-safe { height: 34px; }
+
+  /* Toast notification */
+  .toast { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); background: #1a0508; border: 1px solid #c0305a; border-radius: 8px; padding: 12px 20px; font-size: 13px; color: #ff6b9d; opacity: 0; transition: opacity 0.3s; z-index: 999; white-space: nowrap; pointer-events: none; }
+  .toast.show { opacity: 1; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <div class="header-title">DIABOLIQUE</div>
+    <div class="header-day" id="headerDay">Loading...</div>
+  </div>
+  <div style="text-align:right;">
+    <div style="font-size:13px; color:#ff6b9d;" id="phaseLabel">Phase 1</div>
+    <div style="font-size:11px; color:#555;" id="weekLabel">Week 1</div>
+  </div>
+</div>
+
+<div class="nav">
+  <button class="nav-btn active" onclick="showTab('today')">Today</button>
+  <button class="nav-btn" onclick="showTab('week')">This Week</button>
+  <button class="nav-btn" onclick="showTab('progress')">Progress</button>
+  <button class="nav-btn" onclick="showTab('settings')">Settings</button>
+</div>
+
+<div class="content">
+
+  <!-- TODAY TAB -->
+  <div id="tab-today">
+    <div class="week-strip" id="weekStrip"></div>
+    <div class="day-header" id="dayHeader">
+      <div class="phase-label" id="dayPhaseLabel">Phase 1 — Week 1</div>
+      <div class="day-title" id="dayTitle">Loading...</div>
+      <div class="day-focus" id="dayFocus"></div>
+    </div>
+    <div class="rest-timer" id="restTimer">
+      <div class="timer-display" id="timerDisplay">1:30</div>
+      <div class="timer-label">Rest Timer</div>
+      <button class="timer-btn" onclick="skipTimer()">Skip Rest</button>
+    </div>
+    <div class="complete-banner" id="completeBanner">
+      <div class="complete-title">Workout Complete 🖤</div>
+      <div class="complete-sub" id="completeMsg">Diabolique showed up today. See you tomorrow.</div>
+    </div>
+    <div id="exerciseList"></div>
+  </div>
+
+  <!-- WEEK TAB -->
+  <div id="tab-week" style="display:none;">
+    <div id="weekOverview"></div>
+  </div>
+
+  <!-- PROGRESS TAB -->
+  <div id="tab-progress" style="display:none;">
+    <div class="progress-section">
+      <div class="progress-title">Program Progress</div>
+      <div class="progress-row">
+        <div class="progress-label">Phase 1 (Weeks 1-12)</div>
+        <div class="progress-bar-bg"><div class="progress-bar-fill" id="phase1Bar" style="width:0%"></div></div>
+        <div class="progress-val" id="phase1Val">0%</div>
+      </div>
+      <div class="progress-row">
+        <div class="progress-label">Phase 2 (Weeks 13-24)</div>
+        <div class="progress-bar-bg"><div class="progress-bar-fill" id="phase2Bar" style="width:0%"></div></div>
+        <div class="progress-val" id="phase2Val">0%</div>
+      </div>
+      <div class="progress-row">
+        <div class="progress-label">Phase 3 (Weeks 25-36)</div>
+        <div class="progress-bar-bg"><div class="progress-bar-fill" id="phase3Bar" style="width:0%"></div></div>
+        <div class="progress-val" id="phase3Val">0%</div>
+      </div>
+      <div class="progress-row">
+        <div class="progress-label">Phase 4 (Weeks 37-48)</div>
+        <div class="progress-bar-bg"><div class="progress-bar-fill" id="phase4Bar" style="width:0%"></div></div>
+        <div class="progress-val" id="phase4Val">0%</div>
+      </div>
+    </div>
+
+    <div class="progress-section">
+      <div class="progress-title">Key Lift Progress</div>
+      <div id="liftProgress"></div>
+    </div>
+
+    <div class="progress-section">
+      <div class="progress-title">Workouts Completed</div>
+      <div style="font-size:48px; font-weight:700; color:#ff6b9d;" id="totalWorkouts">0</div>
+      <div style="font-size:12px; color:#555; letter-spacing:1px; text-transform:uppercase;">Total Sessions</div>
+    </div>
+  </div>
+
+  <!-- SETTINGS TAB -->
+  <div id="tab-settings" style="display:none;">
+    <div class="setup-card">
+      <h3>Push Notifications</h3>
+      <p>Get your daily 7am workout notification on your iPhone. After enabling, add this page to your Home Screen for the full app experience.</p>
+      <button class="setup-btn" onclick="requestNotifications()">Enable Daily Notifications</button>
+    </div>
+
+    <div class="setup-card">
+      <h3>Add to Home Screen</h3>
+      <p>In Safari, tap the Share button then "Add to Home Screen" to install Diabolique Training as an app on your iPhone.</p>
+    </div>
+
+    <div class="settings-row">
+      <div>
+        <div class="settings-label">Notification Time</div>
+        <div class="settings-sub">Daily workout reminder</div>
+      </div>
+      <select class="settings-select" id="notifTime" onchange="saveSettings()">
+        <option value="6">6:00 AM</option>
+        <option value="7" selected>7:00 AM</option>
+        <option value="8">8:00 AM</option>
+        <option value="9">9:00 AM</option>
+      </select>
+    </div>
+
+    <div class="settings-row">
+      <div>
+        <div class="settings-label">Rest Timer Duration</div>
+        <div class="settings-sub">Between sets</div>
+      </div>
+      <select class="settings-select" id="restDuration" onchange="saveSettings()">
+        <option value="60">60 sec</option>
+        <option value="90" selected>90 sec</option>
+        <option value="120">2 min</option>
+        <option value="180">3 min</option>
+      </select>
+    </div>
+
+    <div class="settings-row">
+      <div>
+        <div class="settings-label">Program Version</div>
+        <div class="settings-sub">Current plan</div>
+      </div>
+      <div class="settings-value">With Hyrox</div>
+    </div>
+
+    <div class="settings-row">
+      <div>
+        <div class="settings-label">Progressive Overload</div>
+        <div class="settings-sub">Auto increase every 2 weeks</div>
+      </div>
+      <div class="settings-value">On</div>
+    </div>
+
+    <div class="settings-row">
+      <div>
+        <div class="settings-label">Manual Week Override</div>
+        <div class="settings-sub">Set your current week manually</div>
+      </div>
+      <select class="settings-select" id="manualWeek" onchange="applyManualWeek()">
+        ${Array.from({length: 48}, (_,i) => `<option value="${i+1}" ${i===0?'selected':''}>Week ${i+1}</option>`).join('')}
+      </select>
+    </div>
+
+    <div class="settings-row">
+      <div>
+        <div class="settings-label">Manual Phase Override</div>
+        <div class="settings-sub">Set your current phase manually</div>
+      </div>
+      <select class="settings-select" id="manualPhase" onchange="applyManualWeek()">
+        <option value="1">Phase 1</option>
+        <option value="2">Phase 2</option>
+        <option value="3">Phase 3</option>
+        <option value="4">Phase 4</option>
+      </select>
+    </div>
+
+    <div class="settings-row">
+      <div>
+        <div class="settings-label">Manual Start Date</div>
+        <div class="settings-sub">Override when program began</div>
+      </div>
+      <input type="date" id="manualStartDate" style="background:#1f1f1f; border:1px solid #2f2f2f; border-radius:6px; color:#f0e6e6; padding:8px 12px; font-size:14px;" onchange="applyManualStartDate()">
+    </div>
+
+    <div class="settings-row" style="border:none;">
+      <div>
+        <div class="settings-label">Reset Program</div>
+        <div class="settings-sub">Start from Week 1 Day 1</div>
+      </div>
+      <button onclick="resetProgram()" style="background:#1a0508; border:1px solid #c0305a; color:#ff6b9d; padding:8px 16px; border-radius:6px; font-size:13px; cursor:pointer;">Reset</button>
+    </div>
+  </div>
+
+  <div class="bottom-safe"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ============================================================
+// DATA — Your confirmed weights
+// ============================================================
+const STARTING_WEIGHTS = {
+  'Hip Thrusts': { weight: 150, unit: 'lbs', type: 'barbell' },
+  'Romanian Deadlifts': { weight: 30, unit: 'lbs each', type: 'dumbbell' },
+  'Bulgarian Split Squats': { weight: 25, unit: 'lbs each', type: 'dumbbell' },
+  'Leg Press': { weight: 270, unit: 'lbs total', type: 'machine' },
+  'Sumo Squats': { weight: 135, unit: 'lbs', type: 'barbell' },
+  'Glute Bridges': { weight: 35, unit: 'lbs', type: 'dumbbell' },
+  'Cable Kickbacks': { weight: 60, unit: 'lbs', type: 'cable' },
+  'Hip Abductions': { weight: 130, unit: 'lbs', type: 'machine' },
+  'Leg Curls': { weight: 50, unit: 'lbs', type: 'machine' },
+  'Leg Extension': { weight: 100, unit: 'lbs', type: 'machine' },
+  'Calf Raises': { weight: 90, unit: 'lbs', type: 'machine' },
+  'Step Ups': { weight: 35, unit: 'lbs each', type: 'dumbbell' },
+  'Goblet Squats': { weight: 45, unit: 'lbs', type: 'dumbbell' },
+  'Walking Lunges': { weight: 25, unit: 'lbs each', type: 'dumbbell' },
+  'Shoulder Press': { weight: 15, unit: 'lbs each', type: 'dumbbell' },
+  'Lateral Raises': { weight: 10, unit: 'lbs each', type: 'dumbbell' },
+  'Chest Press': { weight: 45, unit: 'lbs each', type: 'dumbbell' },
+  'Incline Dumbbell Press': { weight: 35, unit: 'lbs each', type: 'dumbbell' },
+  'Tricep Dips': { weight: 0, unit: 'bodyweight', type: 'bodyweight' },
+  'Tricep Overhead Extension': { weight: 25, unit: 'lbs', type: 'dumbbell' },
+  'Cable Tricep Pushdowns': { weight: 60, unit: 'lbs', type: 'cable' },
+  'Arnold Press': { weight: 30, unit: 'lbs each', type: 'dumbbell' },
+  'Pull Ups': { weight: 0, unit: 'bodyweight', type: 'bodyweight' },
+  'Dumbbell Rows': { weight: 30, unit: 'lbs each', type: 'dumbbell' },
+  'Cable Rows': { weight: 90, unit: 'lbs', type: 'cable' },
+  'Bicep Curls': { weight: 25, unit: 'lbs each', type: 'dumbbell' },
+  'Hammer Curls': { weight: 25, unit: 'lbs each', type: 'dumbbell' },
+  'Face Pulls': { weight: 45, unit: 'lbs', type: 'cable' },
+  'Lat Pulldown': { weight: 100, unit: 'lbs', type: 'cable' },
+  'Reverse Flys': { weight: 30, unit: 'lbs each', type: 'dumbbell' },
+  'Straight Arm Pulldown': { weight: 50, unit: 'lbs', type: 'cable' },
+  'Shrugs': { weight: 35, unit: 'lbs each', type: 'dumbbell' },
+  'Cable Crunches': { weight: 50, unit: 'lbs', type: 'cable' },
+  'Pallof Press': { weight: 50, unit: 'lbs', type: 'cable' },
+  'Hanging Leg Raises': { weight: 0, unit: 'bodyweight', type: 'bodyweight' },
+  'Ab Wheel': { weight: 0, unit: 'bodyweight', type: 'bodyweight' },
+  'Russian Twists': { weight: 10, unit: 'lbs', type: 'dumbbell' },
+  'Conventional Deadlift': { weight: 135, unit: 'lbs', type: 'barbell' },
+  'Single Leg RDL': { weight: 30, unit: 'lbs each', type: 'dumbbell' },
+  'Farmers Carry': { weight: 35, unit: 'lbs each', type: 'dumbbell' },
+  'Wall Balls': { weight: 10, unit: 'lbs', type: 'ball' },
+  'Sandbag Lunges': { weight: 35, unit: 'lbs', type: 'sandbag' },
+  'Rowing Machine': { weight: 0, unit: 'damper 5', type: 'cardio' },
+  'Ski Erg': { weight: 0, unit: 'bodyweight', type: 'cardio' },
+};
+
+// ============================================================
+// WORKOUT PROGRAM — All 4 Phases
+// ============================================================
+const PROGRAM = [
+  // PHASE 1 — Weeks 1-12
+  // Week structure repeats — Mon Tue Wed Thu Fri Sat Sun
+  {
+    day: 'Monday', phase: 1, focus: 'Glutes & Hamstrings', type: 'weights',
+    exercises: [
+      { name: 'Hip Thrusts', sets: 4, reps: 15 },
+      { name: 'Romanian Deadlifts', sets: 3, reps: 10 },
+      { name: 'Cable Kickbacks', sets: 3, reps: 15, note: 'Each side' },
+      { name: 'Sumo Squats', sets: 3, reps: 12 },
+    ]
+  },
+  {
+    day: 'Tuesday', phase: 1, focus: 'Upper Body Push', type: 'weights',
+    exercises: [
+      { name: 'Chest Press', sets: 3, reps: 12 },
+      { name: 'Shoulder Press', sets: 3, reps: 12 },
+      { name: 'Lateral Raises', sets: 3, reps: 15 },
+      { name: 'Tricep Dips', sets: 3, reps: 12 },
+      { name: 'Tricep Overhead Extension', sets: 3, reps: 12 },
+    ]
+  },
+  {
+    day: 'Wednesday', phase: 1, focus: 'Reformer Pilates', type: 'pilates',
+    exercises: [],
+    pilatesNotes: [
+      'Beginner class — tell instructor you are new',
+      'Focus: Footwork series for calf and ankle strength',
+      'Hundred exercise — core activation and breath control',
+      'Leg circles — hip mobility and glute activation',
+      'Elephant — hamstring flexibility and core stability',
+      'Short spine massage — spinal mobility',
+    ]
+  },
+  {
+    day: 'Thursday', phase: 1, focus: 'Legs & Glutes', type: 'weights',
+    exercises: [
+      { name: 'Bulgarian Split Squats', sets: 3, reps: 10, note: 'Each side' },
+      { name: 'Leg Press', sets: 3, reps: 15 },
+      { name: 'Hip Abductions', sets: 3, reps: 20 },
+      { name: 'Glute Bridges', sets: 4, reps: 20 },
+      { name: 'Calf Raises', sets: 3, reps: 20 },
+    ]
+  },
+  {
+    day: 'Friday', phase: 1, focus: 'Upper Body Pull', type: 'weights',
+    exercises: [
+      { name: 'Pull Ups', sets: 3, reps: 8 },
+      { name: 'Dumbbell Rows', sets: 3, reps: 12, note: 'Each side' },
+      { name: 'Face Pulls', sets: 3, reps: 15 },
+      { name: 'Bicep Curls', sets: 3, reps: 12 },
+      { name: 'Reverse Flys', sets: 3, reps: 12 },
+    ]
+  },
+  {
+    day: 'Saturday', phase: 1, focus: 'Core & Conditioning', type: 'weights',
+    exercises: [
+      { name: 'Hanging Leg Raises', sets: 3, reps: 12 },
+      { name: 'Cable Crunches', sets: 3, reps: 15 },
+      { name: 'Pallof Press', sets: 3, reps: 12, note: 'Each side' },
+      { name: 'Ab Wheel', sets: 3, reps: 10 },
+      { name: 'Russian Twists', sets: 3, reps: 20 },
+    ]
+  },
+  {
+    day: 'Sunday', phase: 1, focus: 'Rest Day', type: 'rest',
+    exercises: [],
+    restNotes: [
+      'Full rest — your body repairs and grows on rest days',
+      'Light walk if desired — 20-30 minutes maximum',
+      'Foam rolling and stretching encouraged',
+      'Extra hydration — 4 liters today',
+      'Prep your meals for the week',
+      'Review next week and come back tomorrow ready',
+    ]
+  },
+  // PHASE 2 — Weeks 13-24
+  {
+    day: 'Monday', phase: 2, focus: 'Glutes & Hamstrings', type: 'weights',
+    exercises: [
+      { name: 'Hip Thrusts', sets: 4, reps: 12, note: 'Barbell — increase weight' },
+      { name: 'Single Leg RDL', sets: 3, reps: 10, note: 'Each side' },
+      { name: 'Cable Kickbacks', sets: 3, reps: 15, note: 'Each side' },
+      { name: 'Walking Lunges', sets: 3, reps: 12, note: 'Each side' },
+    ]
+  },
+  {
+    day: 'Tuesday', phase: 2, focus: 'Upper Body Push', type: 'weights',
+    exercises: [
+      { name: 'Incline Dumbbell Press', sets: 3, reps: 12 },
+      { name: 'Arnold Press', sets: 3, reps: 12 },
+      { name: 'Lateral Raises', sets: 3, reps: 15 },
+      { name: 'Tricep Overhead Extension', sets: 3, reps: 12 },
+      { name: 'Cable Tricep Pushdowns', sets: 3, reps: 12 },
+    ]
+  },
+  {
+    day: 'Wednesday', phase: 2, focus: 'Reformer Pilates', type: 'pilates',
+    exercises: [],
+    pilatesNotes: [
+      'Intermediate class',
+      'Side lying series — hip abductors and outer glutes',
+      'Long stretch series — full body strength and stability',
+      'Mermaid stretch — waist definition and lateral flexibility',
+      'Kneeling series — glute isolation and balance',
+      'Swan — back extension and posture improvement',
+    ]
+  },
+  {
+    day: 'Thursday', phase: 2, focus: 'Legs & Glutes', type: 'weights',
+    exercises: [
+      { name: 'Leg Press', sets: 3, reps: 15 },
+      { name: 'Walking Lunges', sets: 3, reps: 12, note: 'Each side' },
+      { name: 'Leg Curls', sets: 3, reps: 15 },
+      { name: 'Hip Abductions', sets: 3, reps: 20 },
+      { name: 'Calf Raises', sets: 3, reps: 20 },
+    ]
+  },
+  {
+    day: 'Friday', phase: 2, focus: 'Upper Body Pull', type: 'weights',
+    exercises: [
+      { name: 'Pull Ups', sets: 3, reps: 8 },
+      { name: 'Cable Rows', sets: 3, reps: 12 },
+      { name: 'Reverse Flys', sets: 3, reps: 15 },
+      { name: 'Hammer Curls', sets: 3, reps: 12 },
+      { name: 'Lat Pulldown', sets: 3, reps: 12 },
+    ]
+  },
+  {
+    day: 'Saturday', phase: 2, focus: 'Hyrox Introduction', type: 'hyrox',
+    exercises: [
+      { name: 'Rowing Machine', sets: 3, reps: 0, note: '500m each — pace yourself' },
+      { name: 'Farmers Carry', sets: 4, reps: 0, note: '40m each set' },
+      { name: 'Wall Balls', sets: 3, reps: 20 },
+      { name: 'Hanging Leg Raises', sets: 3, reps: 12 },
+    ],
+    hyroxNote: 'Run 2km easy before this session at a conversational pace. This is your first Hyrox session — keep it light and learn the movements.'
+  },
+  {
+    day: 'Sunday', phase: 2, focus: 'Reformer Pilates', type: 'pilates',
+    exercises: [],
+    pilatesNotes: [
+      'Second pilates session this week — intermediate class',
+      'Focus on coordination and flow between movements',
+      'Coordination exercise — core and arm integration',
+      'Swan dive — spinal mobility',
+      'Side splits — hip flexibility',
+      'Cool down and full body stretch at end',
+    ]
+  },
+  // PHASE 3 — Weeks 25-36
+  {
+    day: 'Monday', phase: 3, focus: 'Glutes & Hamstrings', type: 'weights',
+    exercises: [
+      { name: 'Hip Thrusts', sets: 4, reps: 15, note: 'Smith machine' },
+      { name: 'Romanian Deadlifts', sets: 3, reps: 12 },
+      { name: 'Glute Bridges', sets: 3, reps: 20 },
+      { name: 'Hip Abductions', sets: 3, reps: 20 },
+    ]
+  },
+  {
+    day: 'Tuesday', phase: 3, focus: 'Hyrox Run & Cardio', type: 'hyrox',
+    exercises: [
+      { name: 'Ski Erg', sets: 3, reps: 0, note: '500m each' },
+      { name: 'Rowing Machine', sets: 3, reps: 0, note: '500m each' },
+    ],
+    hyroxNote: 'Run 5km at moderate pace before this session. By end of Phase 3 you should be comfortable running 5-6km. Register for your Hyrox event this phase.'
+  },
+  {
+    day: 'Wednesday', phase: 3, focus: 'Reformer Pilates', type: 'pilates',
+    exercises: [],
+    pilatesNotes: [
+      'Advanced footwork with spring resistance changes',
+      'Jump board — cardio on the reformer',
+      'Full side split series — hip flexibility and inner thigh',
+      'Tree exercise — hip flexor release',
+      'Control balance — advanced core work',
+      'Rowing series — functional upper body',
+    ]
+  },
+  {
+    day: 'Thursday', phase: 3, focus: 'Legs & Glutes', type: 'weights',
+    exercises: [
+      { name: 'Goblet Squats', sets: 4, reps: 15 },
+      { name: 'Step Ups', sets: 3, reps: 12, note: 'Each side' },
+      { name: 'Leg Extension', sets: 3, reps: 15 },
+      { name: 'Leg Curls', sets: 3, reps: 15 },
+      { name: 'Calf Raises', sets: 3, reps: 20 },
+    ]
+  },
+  {
+    day: 'Friday', phase: 3, focus: 'Upper Body Pull', type: 'weights',
+    exercises: [
+      { name: 'Dumbbell Rows', sets: 3, reps: 12, note: 'Each side' },
+      { name: 'Face Pulls', sets: 4, reps: 15 },
+      { name: 'Bicep Curls', sets: 3, reps: 15 },
+      { name: 'Straight Arm Pulldown', sets: 3, reps: 15 },
+      { name: 'Shrugs', sets: 3, reps: 15 },
+    ]
+  },
+  {
+    day: 'Saturday', phase: 3, focus: 'Hyrox Circuit', type: 'hyrox',
+    exercises: [
+      { name: 'Rowing Machine', sets: 2, reps: 0, note: '500m each round' },
+      { name: 'Wall Balls', sets: 2, reps: 25 },
+      { name: 'Farmers Carry', sets: 2, reps: 0, note: '100m each round' },
+      { name: 'Sandbag Lunges', sets: 2, reps: 0, note: '20m each round' },
+    ],
+    hyroxNote: 'Run 1km before each round. Complete 2 full rounds with 3 min rest between. This simulates race conditions at lower intensity.'
+  },
+  {
+    day: 'Sunday', phase: 3, focus: 'Reformer Pilates', type: 'pilates',
+    exercises: [],
+    pilatesNotes: [
+      'Third pilates session this week if energy allows',
+      'Jump board for cardio — 15 minutes',
+      'Focus on hip and lower back mobility',
+      'Side lying series to complement Hyrox leg work',
+      'Full body cool down and stretch',
+      'Private session this month — ask instructor to assess your form',
+    ]
+  },
+  // PHASE 4 — Weeks 37-48
+  {
+    day: 'Monday', phase: 4, focus: 'Glutes & Power', type: 'weights',
+    exercises: [
+      { name: 'Hip Thrusts', sets: 5, reps: 10, note: 'Heavy — push the weight' },
+      { name: 'Conventional Deadlift', sets: 3, reps: 8 },
+      { name: 'Cable Kickbacks', sets: 3, reps: 15, note: 'Each side' },
+      { name: 'Glute Bridges', sets: 4, reps: 20, note: 'Banded — 100 rep finisher' },
+    ]
+  },
+  {
+    day: 'Tuesday', phase: 4, focus: 'Hyrox Full Stations', type: 'hyrox',
+    exercises: [
+      { name: 'Ski Erg', sets: 1, reps: 0, note: '1000m — race pace' },
+      { name: 'Rowing Machine', sets: 1, reps: 0, note: '1000m — race pace' },
+      { name: 'Wall Balls', sets: 1, reps: 50 },
+      { name: 'Farmers Carry', sets: 1, reps: 0, note: '200m total' },
+      { name: 'Sandbag Lunges', sets: 1, reps: 0, note: '40m total' },
+    ],
+    hyroxNote: 'Full station practice day. Run 1km between each station. This is race simulation — treat it seriously. Rest as needed but keep moving.'
+  },
+  {
+    day: 'Wednesday', phase: 4, focus: 'Reformer Pilates', type: 'pilates',
+    exercises: [],
+    pilatesNotes: [
+      'Advanced full flow class',
+      'Jump board twice per session',
+      'Tower work if your studio has it',
+      'Rowing series — upper body functional strength',
+      'Full reformer flow — transitions build body awareness',
+      'Private session once this month',
+    ]
+  },
+  {
+    day: 'Thursday', phase: 4, focus: 'Legs & Glutes', type: 'weights',
+    exercises: [
+      { name: 'Bulgarian Split Squats', sets: 3, reps: 10, note: 'Each side — heavy' },
+      { name: 'Romanian Deadlifts', sets: 4, reps: 10 },
+      { name: 'Leg Press', sets: 4, reps: 12, note: 'Heavy' },
+      { name: 'Hip Abductions', sets: 3, reps: 20 },
+      { name: 'Calf Raises', sets: 4, reps: 20 },
+    ]
+  },
+  {
+    day: 'Friday', phase: 4, focus: 'Run & Hyrox Cardio', type: 'hyrox',
+    exercises: [
+      { name: 'Rowing Machine', sets: 1, reps: 0, note: '1000m post run' },
+      { name: 'Farmers Carry', sets: 3, reps: 0, note: '40m each' },
+      { name: 'Wall Balls', sets: 2, reps: 25 },
+    ],
+    hyroxNote: 'Run 6-8km at race pace first. Then complete the station work above. This is your longest run day — push yourself but stay controlled.'
+  },
+  {
+    day: 'Saturday', phase: 4, focus: 'Full Hyrox Simulation', type: 'hyrox',
+    exercises: [
+      { name: 'Rowing Machine', sets: 1, reps: 0, note: '1000m — race pace' },
+      { name: 'Ski Erg', sets: 1, reps: 0, note: '1000m — race pace' },
+      { name: 'Wall Balls', sets: 1, reps: 75 },
+      { name: 'Farmers Carry', sets: 1, reps: 0, note: '200m total' },
+      { name: 'Sandbag Lunges', sets: 1, reps: 0, note: '100m total' },
+    ],
+    hyroxNote: 'FULL RACE SIMULATION. 8×1km runs with all 8 stations. This is your dress rehearsal. Do this in weeks 40 and 44. Time yourself — this is your baseline.'
+  },
+  {
+    day: 'Sunday', phase: 4, focus: 'Reformer Pilates', type: 'pilates',
+    exercises: [],
+    pilatesNotes: [
+      'Recovery pilates — medium intensity',
+      'Focus on hip flexor and lower back release after Hyrox sim',
+      'Jump board light — 10 minutes only',
+      'Full body stretch sequence',
+      'Deep breathing and cool down',
+      'You have earned this rest — show up fully tomorrow',
+    ]
+  },
+];
+
+// ============================================================
+// CARDIO SCHEDULE
+// ============================================================
+const CARDIO = {
+  1: { // Phase 1
+    Monday: { cardio: 'Daily Walk', duration: '20-30 min', intensity: 'Easy', note: 'Post workout or any time of day' },
+    Tuesday: { cardio: 'Daily Walk', duration: '20-30 min', intensity: 'Easy', note: 'Post workout or any time of day' },
+    Wednesday: { cardio: 'Rowing or Cycling', duration: '20 min', intensity: 'Moderate', note: 'Before pilates session' },
+    Thursday: { cardio: 'Daily Walk', duration: '20-30 min', intensity: 'Easy', note: 'Post workout or any time of day' },
+    Friday: { cardio: 'Daily Walk', duration: '20-30 min', intensity: 'Easy', note: 'Post workout or any time of day' },
+    Saturday: { cardio: 'Daily Walk', duration: '20-30 min', intensity: 'Easy', note: 'Post workout or any time of day' },
+    Sunday: { cardio: 'Active Recovery Walk', duration: '30 min', intensity: 'Easy', note: 'Light movement only — full rest day' },
+  },
+  2: { // Phase 2
+    Monday: { cardio: 'Daily Walk', duration: '30 min', intensity: 'Easy', note: 'Post workout' },
+    Tuesday: { cardio: 'Run', duration: '2-3km', intensity: 'Conversational pace', note: 'Building toward 5km by end of phase' },
+    Wednesday: { cardio: 'Rowing Machine', duration: '20 min', intensity: 'Moderate', note: 'Before pilates' },
+    Thursday: { cardio: 'Daily Walk', duration: '30 min', intensity: 'Easy', note: 'Post workout' },
+    Friday: { cardio: 'Run', duration: '2-3km', intensity: 'Conversational pace', note: 'Second run of the week' },
+    Saturday: { cardio: 'Hyrox Intro', duration: '2km run', intensity: 'Easy', note: 'Before station work' },
+    Sunday: { cardio: 'Active Recovery Walk', duration: '30 min', intensity: 'Easy', note: 'Light movement only' },
+  },
+  3: { // Phase 3
+    Monday: { cardio: 'Daily Walk', duration: '30 min', intensity: 'Easy', note: 'Post workout' },
+    Tuesday: { cardio: 'Run + Cardio', duration: '5km run', intensity: 'Moderate', note: 'Then ski erg and rowing' },
+    Wednesday: { cardio: 'Jump Board', duration: '15 min', intensity: 'Moderate', note: 'During pilates session' },
+    Thursday: { cardio: 'Daily Walk', duration: '30 min', intensity: 'Easy', note: 'Post workout' },
+    Friday: { cardio: 'Run', duration: '4-5km', intensity: 'Moderate', note: 'Building race pace' },
+    Saturday: { cardio: 'Hyrox Circuit', duration: '1km between stations', intensity: 'Race pace', note: '2 full rounds' },
+    Sunday: { cardio: 'Jump Board Light', duration: '10 min', intensity: 'Easy', note: 'During pilates — recovery focus' },
+  },
+  4: { // Phase 4
+    Monday: { cardio: 'Daily Walk', duration: '30 min', intensity: 'Easy', note: 'Active recovery post weights' },
+    Tuesday: { cardio: 'Hyrox Stations', duration: '1km between each', intensity: 'Race pace', note: 'Full station practice day' },
+    Wednesday: { cardio: 'Jump Board', duration: '20 min', intensity: 'Moderate', note: 'During pilates — twice per session' },
+    Thursday: { cardio: 'Daily Walk', duration: '30 min', intensity: 'Easy', note: 'Active recovery post weights' },
+    Friday: { cardio: 'Long Run', duration: '6-8km', intensity: 'Race pace', note: 'Longest run of the week' },
+    Saturday: { cardio: 'Full Race Sim', duration: '8×1km', intensity: 'Race pace', note: 'Between all 8 stations' },
+    Sunday: { cardio: 'Jump Board Light', duration: '10 min', intensity: 'Easy', note: 'Recovery pilates focus' },
+  }
+};
+
+
+let state = {
+  startDate: null,
+  currentWeights: {},
+  completedWorkouts: {},
+  completedSets: {},
+  settings: { notifTime: 7, restDuration: 90 }
+};
+
+function loadState() {
+  try {
+    const saved = localStorage.getItem('diabolique_state');
+    if (saved) state = { ...state, ...JSON.parse(saved) };
+    if (!state.startDate) {
+      state.startDate = new Date().toISOString().split('T')[0];
+      saveState();
+    }
+    if (!state.currentWeights || Object.keys(state.currentWeights).length === 0) {
+      state.currentWeights = {};
+      Object.entries(STARTING_WEIGHTS).forEach(([name, data]) => {
+        state.currentWeights[name] = data.weight;
+      });
+      saveState();
+    }
+  } catch(e) { console.log('State load error', e); }
+}
+
+function saveState() {
+  try {
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem('diabolique_state', JSON.stringify(state));
+    }
+  } catch(e) { console.log('save error', e); }
+}
+
+// ============================================================
+// PROGRAM LOGIC
+// ============================================================
+function getProgramDay() {
+  try {
+    const start = new Date(state.startDate);
+    const today = new Date();
+    const diffDays = Math.max(0, Math.floor((today - start) / (1000 * 60 * 60 * 24)));
+    const weekNum = Math.floor(diffDays / 7) + 1;
+    const phase = weekNum <= 12 ? 1 : weekNum <= 24 ? 2 : weekNum <= 36 ? 3 : 4;
+    const phaseIndex = (phase - 1) * 7;
+    const jsDay = today.getDay();
+    const programDayIndex = jsDay === 0 ? 6 : jsDay - 1;
+    const dayIndex = phaseIndex + programDayIndex;
+    const workout = PROGRAM[Math.min(dayIndex, PROGRAM.length - 1)] || PROGRAM[phaseIndex];
+    return { workout, weekNum, phase, dayOfWeek: programDayIndex, diffDays };
+  } catch(e) {
+    return { workout: PROGRAM[0], weekNum: 1, phase: 1, dayOfWeek: 0, diffDays: 0 };
+  }
+}
+
+function getWeightForExercise(name) {
+  const base = STARTING_WEIGHTS[name];
+  if (!base) return { weight: 0, unit: 'lbs', increased: false };
+  const { workout, weekNum } = getProgramDay();
+  const increments = Math.floor((weekNum - 1) / 2);
+  const current = state.currentWeights[name] || base.weight;
+  const sessionKey = `${new Date().toISOString().split('T')[0]}_${name}`;
+  const increased = increments > 0 && !state.completedWorkouts[sessionKey];
+  return { weight: current, unit: base.unit, increased };
+}
+
+function applyProgressiveOverload(name) {
+  const base = STARTING_WEIGHTS[name];
+  if (!base || base.type === 'bodyweight' || base.type === 'cardio') return;
+  const increment = base.type === 'machine' || name.includes('Leg Press') || name.includes('Hip Thrusts') ? 5 : 2.5;
+  state.currentWeights[name] = (state.currentWeights[name] || base.weight) + increment;
+  saveState();
+}
+
+// ============================================================
+// UI RENDERING
+// ============================================================
+function showTab(tab) {
+  ['today', 'week', 'progress', 'settings'].forEach(t => {
+    document.getElementById(`tab-${t}`).style.display = t === tab ? 'block' : 'none';
+    document.querySelectorAll('.nav-btn').forEach((btn, i) => {
+      btn.classList.toggle('active', ['today','week','progress','settings'][i] === tab);
+    });
+  });
+  if (tab === 'progress') renderProgress();
+  if (tab === 'week') renderWeek();
+  if (tab === 'settings') initSettingsValues();
+}
+
+function renderWeekStrip() {
+  const strip = document.getElementById('weekStrip');
+  const days = ['S','M','T','W','T','F','S'];
+  const today = new Date().getDay();
+  const { diffDays } = getProgramDay();
+  strip.innerHTML = days.map((d, i) => {
+    const isToday = i === today;
+    const isPast = i < today;
+    return `<div class="week-day ${isToday ? 'today' : isPast ? 'done' : ''}">
+      <div class="week-day-name">${d}</div>
+      <div class="week-day-icon">${isToday ? '💪' : isPast ? '✓' : '·'}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderToday() {
+  try {
+    const { workout, weekNum, phase } = getProgramDay();
+    if (!workout) { document.getElementById('dayTitle').textContent = 'Tap Settings to set your start date'; return; }
+
+    const dayNames = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+    const todayNames = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+    const todayName = todayNames[new Date().getDay()];
+
+    document.getElementById('headerDay').textContent = `${todayName} · ${new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
+    document.getElementById('phaseLabel').textContent = `Phase ${phase}`;
+    document.getElementById('weekLabel').textContent = `Week ${weekNum}`;
+    document.getElementById('dayPhaseLabel').textContent = `Phase ${phase} — Week ${weekNum}`;
+    document.getElementById('dayTitle').textContent = workout.focus;
+    document.getElementById('dayFocus').textContent = todayName;
+
+    const list = document.getElementById('exerciseList');
+
+  if (workout.type === 'rest') {
+    list.innerHTML = `
+    ${renderCardioCard(workout.day, phase)}
+    <div class="setup-card">
+      <h3>Rest Day 🖤</h3>
+      <p style="color:#888; font-size:13px; line-height:1.8;">${workout.restNotes.map(n => `• ${n}`).join('<br>')}</p>
+    </div>`;
+    return;
+  }
+
+  if (workout.type === 'pilates') {
+    list.innerHTML = `
+    ${renderCardioCard(workout.day, phase)}
+    <div class="setup-card" style="border-top:2px solid #6b9dff;">
+      <h3 style="color:#6b9dff;">Reformer Pilates Today</h3>
+      <p style="color:#888; font-size:13px; line-height:1.8; margin-bottom:0;">${workout.pilatesNotes.map(n => `• ${n}`).join('<br>')}</p>
+    </div>`;
+    return;
+  }
+
+  if (workout.type === 'hyrox') {
+    list.innerHTML = `
+    ${renderCardioCard(workout.day, phase)}
+    <div class="hyrox-card" style="margin-bottom:16px;">
+      <div style="font-size:11px; letter-spacing:2px; text-transform:uppercase; color:#ffc107; margin-bottom:6px;">Hyrox Session</div>
+      <div style="font-size:13px; color:#888; line-height:1.7;">${workout.hyroxNote}</div>
+    </div>` + workout.exercises.map((ex, i) => renderExerciseCard(ex, i, 'hyrox')).join('');
+    return;
+  }
+
+  list.innerHTML = renderCardioCard(workout.day, phase) + workout.exercises.map((ex, i) => renderExerciseCard(ex, i, 'weights')).join('');
+  } catch(e) {
+    console.log('renderToday error', e);
+    document.getElementById('dayTitle').textContent = 'Error loading workout — tap Settings';
+  }
+}
+
+function renderCardioCard(dayName, phase) {
+  const todayNames = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const actualDay = todayNames[new Date().getDay()];
+  const cardio = CARDIO[phase]?.[actualDay];
+  if (!cardio) return '';
+  return `<div style="background:#0a0f0a; border:1px solid #1a2a1a; border-left:3px solid #4caf50; border-radius:0 8px 8px 0; padding:14px 18px; margin-bottom:16px;">
+    <div style="font-size:10px; letter-spacing:3px; text-transform:uppercase; color:#4caf50; margin-bottom:6px;">Cardio Today</div>
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <div>
+        <div style="font-size:15px; font-weight:600; color:#f0e6e6;">${cardio.cardio}</div>
+        <div style="font-size:12px; color:#888; margin-top:2px;">${cardio.note}</div>
+      </div>
+      <div style="text-align:right;">
+        <div style="font-size:18px; font-weight:700; color:#4caf50;">${cardio.duration}</div>
+        <div style="font-size:10px; color:#555; letter-spacing:1px; text-transform:uppercase;">${cardio.intensity}</div>
+      </div>
+    </div>
+  </div>`;
+}
+
+
+function renderExerciseCard(ex, index, type) {
+  const { weight, unit } = getWeightForExercise(ex.name);
+  const isBodyweight = unit === 'bodyweight';
+  const isCardio = unit.includes('m') && !unit.includes('lbs');
+  const cardClass = type === 'hyrox' ? 'hyrox-card' : 'exercise-card';
+  const dateKey = new Date().toISOString().split('T')[0];
+
+  let setsHtml = '';
+  for (let s = 0; s < ex.sets; s++) {
+    const setKey = `${dateKey}_${ex.name}_${s}`;
+    const done = state.completedSets[setKey];
+    setsHtml += `<div class="set-box ${done ? 'completed' : ''}" onclick="toggleSet('${dateKey}','${ex.name}',${s},${ex.sets},${index})">
+      <div class="set-num">Set ${s+1}</div>
+      <div class="set-reps">${ex.reps > 0 ? ex.reps : '—'}</div>
+      <div class="set-check">✓</div>
+    </div>`;
+  }
+
+  return `<div class="${cardClass}" id="exCard_${index}">
+    <div class="exercise-header">
+      <div>
+        <div class="exercise-name">${ex.name}</div>
+        <div class="exercise-meta">${ex.sets} sets${ex.reps > 0 ? ` × ${ex.reps} reps` : ''}${ex.note ? ' · ' + ex.note : ''}</div>
+      </div>
+      <div class="exercise-target">
+        ${!isBodyweight && !isCardio ? `<div class="target-weight">${weight}</div><div class="target-label">${unit}</div>` : `<div class="target-weight" style="font-size:14px;">${unit}</div>`}
+      </div>
+    </div>
+    ${setsHtml.length ? `<div class="sets-grid">${setsHtml}</div>` : ''}
+    ${!isBodyweight && !isCardio ? `
+    <div class="weight-row">
+      <button class="weight-btn" onclick="adjustWeight('${ex.name}',-2.5)">−</button>
+      <input class="weight-input" type="number" value="${weight}" id="w_${ex.name.replace(/\s/g,'_')}" onchange="updateWeight('${ex.name}',this.value)">
+      <div class="weight-unit">${unit}</div>
+      <button class="weight-btn" onclick="adjustWeight('${ex.name}',2.5)">+</button>
+    </div>` : ''}
+  </div>`;
+}
+
+function toggleSet(dateKey, exerciseName, setNum, totalSets, exIndex) {
+  const setKey = `${dateKey}_${exerciseName}_${setNum}`;
+  state.completedSets[setKey] = !state.completedSets[setKey];
+  saveState();
+
+  const allSetsForExercise = Array.from({length: totalSets}, (_, i) => state.completedSets[`${dateKey}_${exerciseName}_${i}`]);
+  if (allSetsForExercise.every(Boolean)) {
+    startRestTimer();
+    showToast(`${exerciseName} complete 🖤`);
+  }
+
+  checkWorkoutComplete(dateKey);
+  renderToday();
+}
+
+function checkWorkoutComplete(dateKey) {
+  const { workout } = getProgramDay();
+  if (!workout.exercises || workout.exercises.length === 0) return;
+  const allDone = workout.exercises.every(ex => {
+    return Array.from({length: ex.sets}, (_, i) => state.completedSets[`${dateKey}_${ex.name}_${i}`]).every(Boolean);
+  });
+  if (allDone) {
+    document.getElementById('completeBanner').classList.add('show');
+    state.completedWorkouts[dateKey] = true;
+    saveState();
+    showToast('Workout complete. Diabolique showed up. 🖤');
+  }
+}
+
+function adjustWeight(name, amount) {
+  state.currentWeights[name] = Math.max(0, (state.currentWeights[name] || 0) + amount);
+  saveState();
+  renderToday();
+}
+
+function updateWeight(name, val) {
+  state.currentWeights[name] = parseFloat(val) || 0;
+  saveState();
+}
+
+// ============================================================
+// REST TIMER
+// ============================================================
+let timerInterval = null;
+let timerRemaining = 90;
+
+function startRestTimer() {
+  const duration = parseInt(state.settings.restDuration) || 90;
+  timerRemaining = duration;
+  document.getElementById('restTimer').classList.add('active');
+  clearInterval(timerInterval);
+  updateTimerDisplay();
+  timerInterval = setInterval(() => {
+    timerRemaining--;
+    updateTimerDisplay();
+    if (timerRemaining <= 0) {
+      clearInterval(timerInterval);
+      document.getElementById('restTimer').classList.remove('active');
+      showToast('Rest complete — next set! 💪');
+    }
+  }, 1000);
+}
+
+function updateTimerDisplay() {
+  const m = Math.floor(timerRemaining / 60);
+  const s = timerRemaining % 60;
+  document.getElementById('timerDisplay').textContent = `${m}:${s.toString().padStart(2,'0')}`;
+}
+
+function skipTimer() {
+  clearInterval(timerInterval);
+  document.getElementById('restTimer').classList.remove('active');
+}
+
+// ============================================================
+// PROGRESS
+// ============================================================
+function renderProgress() {
+  const { weekNum } = getProgramDay();
+  const phases = [
+    { id: 1, weeks: 12, start: 1 },
+    { id: 2, weeks: 12, start: 13 },
+    { id: 3, weeks: 12, start: 25 },
+    { id: 4, weeks: 12, start: 37 },
+  ];
+
+  phases.forEach(p => {
+    const progress = Math.min(100, Math.max(0, ((weekNum - p.start) / p.weeks) * 100));
+    document.getElementById(`phase${p.id}Bar`).style.width = progress + '%';
+    document.getElementById(`phase${p.id}Val`).textContent = Math.round(progress) + '%';
+  });
+
+  const total = Object.keys(state.completedWorkouts).length;
+  document.getElementById('totalWorkouts').textContent = total;
+
+  const keyLifts = ['Hip Thrusts', 'Conventional Deadlift', 'Shoulder Press', 'Pull Ups', 'Leg Press'];
+  const liftDiv = document.getElementById('liftProgress');
+  liftDiv.innerHTML = keyLifts.map(lift => {
+    const base = STARTING_WEIGHTS[lift]?.weight || 0;
+    const current = state.currentWeights[lift] || base;
+    const increase = current - base;
+    return `<div class="progress-row">
+      <div class="progress-label">${lift}</div>
+      <div style="flex:1; font-size:13px; color:#ff6b9d;">${current} ${STARTING_WEIGHTS[lift]?.unit || 'lbs'}</div>
+      <div style="font-size:12px; color:${increase > 0 ? '#4caf50' : '#555'};">${increase > 0 ? '+' + increase : '—'}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderWeek() {
+  const { phase, weekNum } = getProgramDay();
+  const phaseStart = (phase - 1) * 7;
+  const weekDays = PROGRAM.slice(phaseStart, phaseStart + 7);
+  const days = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+  const todayName = days[new Date().getDay() === 0 ? 6 : new Date().getDay() - 1];
+
+  document.getElementById('weekOverview').innerHTML = `
+    <div style="font-size:11px; color:#666; letter-spacing:2px; text-transform:uppercase; margin-bottom:16px;">Phase ${phase} — Week ${weekNum}</div>
+    ${weekDays.map(w => `
+      <div style="background:${w.day === todayName ? '#1a0508' : '#111'}; border:1px solid ${w.day === todayName ? '#c0305a' : '#1f1f1f'}; border-radius:8px; padding:14px 16px; margin-bottom:10px;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <div>
+            <div style="font-size:12px; color:${w.day === todayName ? '#c0305a' : '#666'}; letter-spacing:1px; text-transform:uppercase;">${w.day}</div>
+            <div style="font-size:15px; font-weight:600; color:#f0e6e6; margin-top:2px;">${w.focus}</div>
+          </div>
+          <div style="font-size:11px; background:${w.type === 'hyrox' ? '#1a1a0a' : w.type === 'pilates' ? '#0a0a1a' : w.type === 'rest' ? '#1a1a1a' : '#1a0508'}; color:${w.type === 'hyrox' ? '#ffc107' : w.type === 'pilates' ? '#6b9dff' : w.type === 'rest' ? '#555' : '#ff6b9d'}; padding:4px 10px; border-radius:4px; letter-spacing:1px; text-transform:uppercase;">${w.type}</div>
+        </div>
+        ${w.exercises && w.exercises.length > 0 ? `<div style="font-size:12px; color:#555; margin-top:8px;">${w.exercises.map(e => e.name).join(' · ')}</div>` : ''}
+      </div>
+    `).join('')}
+  `;
+}
+
+// ============================================================
+// NOTIFICATIONS
+// ============================================================
+async function requestNotifications() {
+  if (!('Notification' in window)) {
+    showToast('Add to Home Screen first for notifications');
+    return;
+  }
+  try {
+    const permission = await Notification.requestPermission();
+    if (permission === 'granted') {
+      showToast('Notifications enabled! 7am daily. 🖤');
+      scheduleNotification();
+    } else {
+      showToast('Enable notifications in iPhone Settings');
+    }
+  } catch(e) {
+    showToast('Open in Safari and add to Home Screen');
+  }
+}
+
+function scheduleNotification() {
+  const { workout } = getProgramDay();
+  if (Notification.permission === 'granted') {
+    const messages = {
+      weights: `💪 Today: ${workout.focus}. Diabolique does not skip.`,
+      pilates: `🧘 Reformer Pilates today. She shows up for every session.`,
+      hyrox: `🏃 Hyrox day. Diabolique is built different.`,
+      rest: `🖤 Rest day. Recovery is part of the program.`,
+    };
+    new Notification('DIABOLIQUE TRAINING', {
+      body: messages[workout.type] || `Today: ${workout.focus}`,
+      icon: '/favicon.ico',
+    });
+  }
+}
+
+function applyManualWeek() {
+  const week = parseInt(document.getElementById('manualWeek').value);
+  const phase = parseInt(document.getElementById('manualPhase').value);
+  const phaseWeekStart = (phase - 1) * 12;
+  const totalWeeks = phaseWeekStart + (week - 1);
+  const today = new Date();
+  const newStart = new Date(today);
+  newStart.setDate(today.getDate() - (totalWeeks * 7));
+  state.startDate = newStart.toISOString().split('T')[0];
+  saveState();
+  renderToday();
+  renderWeekStrip();
+  showToast(`Set to Phase ${phase} Week ${week} 🖤`);
+}
+
+function applyManualStartDate() {
+  const val = document.getElementById('manualStartDate').value;
+  if (val) {
+    state.startDate = val;
+    saveState();
+    renderToday();
+    renderWeekStrip();
+    showToast(`Start date set to ${val} 🖤`);
+  }
+}
+
+function initSettingsValues() {
+  try {
+    document.getElementById('manualStartDate').value = state.startDate || '';
+    const { weekNum, phase } = getProgramDay();
+    document.getElementById('manualWeek').value = Math.min(weekNum, 48);
+    document.getElementById('manualPhase').value = phase;
+  } catch(e) {}
+}
+
+
+  state.settings.notifTime = parseInt(document.getElementById('notifTime').value);
+  state.settings.restDuration = parseInt(document.getElementById('restDuration').value);
+  saveState();
+  showToast('Settings saved 🖤');
+}
+
+function resetProgram() {
+  if (confirm('Reset entire program to Week 1 Day 1?')) {
+    state.startDate = new Date().toISOString().split('T')[0];
+    state.completedWorkouts = {};
+    state.completedSets = {};
+    state.currentWeights = {};
+    Object.entries(STARTING_WEIGHTS).forEach(([name, data]) => {
+      state.currentWeights[name] = data.weight;
+    });
+    saveState();
+    renderToday();
+    showToast('Program reset to Week 1 🖤');
+  }
+}
+
+// ============================================================
+// TOAST
+// ============================================================
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ============================================================
+// INIT
+// ============================================================
+window.addEventListener('DOMContentLoaded', function() {
+  try {
+    loadState();
+  } catch(e) {
+    // localStorage blocked — use defaults
+    state.startDate = new Date().toISOString().split('T')[0];
+    state.currentWeights = {};
+    Object.entries(STARTING_WEIGHTS).forEach(([name, data]) => {
+      state.currentWeights[name] = data.weight;
+    });
+  }
+  try { renderWeekStrip(); } catch(e) { console.log('weekstrip error', e); }
+  try { renderToday(); } catch(e) {
+    console.log('renderToday init error', e);
+    document.getElementById('dayTitle').textContent = 'Error — tap Settings';
+    document.getElementById('dayFocus').textContent = 'Set your start date in Settings';
+  }
+});
+</script>
+</body>
+</html>
