@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="Diabolique">
+<meta name="theme-color" content="#0a0a0a">
+<title>Diabolique Training</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{background:#0a0a0a;color:#f0e6e6;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:15px;min-height:100vh}
+.header{background:#0f0f0f;border-bottom:1px solid #1f1f1f;padding:16px 20px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:100}
+.header-title{font-size:22px;font-weight:700;letter-spacing:3px;color:#c0305a}
+.header-day{font-size:11px;color:#666;letter-spacing:2px;text-transform:uppercase;margin-top:2px}
+.nav{display:flex;background:#0f0f0f;border-bottom:1px solid #1f1f1f;overflow-x:auto;scrollbar-width:none}
+.nav::-webkit-scrollbar{display:none}
+.nav-btn{flex:0 0 auto;padding:12px 18px;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#555;border:none;background:none;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap}
+.nav-btn.active{color:#c0305a;border-bottom-color:#c0305a}
+.content{padding:20px;max-width:600px;margin:0 auto}
+.day-header{background:#1a0508;border-left:3px solid #c0305a;padding:16px 20px;margin-bottom:20px;border-radius:0 4px 4px 0}
+.day-phase{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:#c0305a;margin-bottom:4px}
+.day-title{font-size:22px;font-weight:700;color:#f0e6e6;margin-bottom:4px}
+.day-focus{font-size:13px;color:#888}
+.ex-card{background:#111;border:1px solid #1f1f1f;border-radius:8px;padding:16px;margin-bottom:12px}
+.ex-card.hyrox{border-top:2px solid #ffc107}
+.ex-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px}
+.ex-name{font-size:15px;font-weight:600;color:#f0e6e6}
+.ex-meta{font-size:12px;color:#888;margin-top:2px}
+.ex-weight{font-size:22px;font-weight:700;color:#ff6b9d;text-align:right}
+.ex-unit{font-size:10px;color:#555;letter-spacing:1px;text-transform:uppercase;text-align:right}
+.sets-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}
+.set-box{background:#0a0a0a;border:1px solid #1f1f1f;border-radius:6px;padding:10px 8px;text-align:center;cursor:pointer}
+.set-box.done{background:#1a0508;border-color:#c0305a}
+.set-num{font-size:10px;color:#555;letter-spacing:1px;text-transform:uppercase;margin-bottom:4px}
+.set-reps{font-size:18px;font-weight:700;color:#f0e6e6}
+.set-box.done .set-reps{display:none}
+.set-check{display:none;font-size:18px;color:#c0305a}
+.set-box.done .set-check{display:block}
+.w-row{display:flex;align-items:center;gap:10px;margin-top:8px}
+.w-input{flex:1;background:#0a0a0a;border:1px solid #1f1f1f;border-radius:6px;padding:10px;color:#f0e6e6;font-size:16px;text-align:center}
+.w-input:focus{outline:none;border-color:#c0305a}
+.w-btn{background:#1a0508;border:1px solid #c0305a;border-radius:6px;color:#ff6b9d;font-size:20px;width:42px;height:42px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.w-unit{font-size:11px;color:#555;white-space:nowrap}
+.cardio-card{background:#0a0f0a;border:1px solid #1a2a1a;border-left:3px solid #4caf50;border-radius:0 8px 8px 0;padding:14px 18px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center}
+.cardio-label{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:#4caf50;margin-bottom:4px}
+.cardio-name{font-size:15px;font-weight:600;color:#f0e6e6}
+.cardio-note{font-size:12px;color:#888;margin-top:2px}
+.cardio-duration{font-size:20px;font-weight:700;color:#4caf50;text-align:right}
+.cardio-intensity{font-size:10px;color:#555;text-transform:uppercase;letter-spacing:1px;text-align:right}
+.info-card{background:#111;border:1px solid #1f1f1f;border-radius:8px;padding:20px;margin-bottom:12px}
+.info-card h3{font-size:16px;font-weight:600;margin-bottom:10px}
+.info-card p{font-size:13px;color:#888;line-height:1.8}
+.pilates-title{color:#6b9dff}
+.hyrox-title{color:#ffc107}
+.rest-title{color:#ff6b9d}
+.timer-box{background:#1a0508;border:1px solid #2a0510;border-radius:8px;padding:16px;margin-bottom:16px;text-align:center;display:none}
+.timer-box.active{display:block}
+.timer-num{font-size:48px;font-weight:700;color:#ff6b9d;font-variant-numeric:tabular-nums}
+.timer-label{font-size:11px;color:#666;letter-spacing:2px;text-transform:uppercase;margin-top:4px}
+.timer-skip{background:#c0305a;border:none;border-radius:6px;color:white;padding:10px 24px;font-size:14px;cursor:pointer;margin-top:12px}
+.complete-box{background:#111;border:1px solid #c0305a;border-radius:8px;padding:24px;text-align:center;margin-bottom:20px;display:none}
+.complete-box.show{display:block}
+.complete-title{font-size:24px;font-weight:700;color:#ff6b9d;margin-bottom:8px}
+.complete-sub{font-size:13px;color:#888}
+.week-strip{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:20px}
+.wd{background:#111;border:1px solid #1f1f1f;border-radius:6px;padding:10px 4px;text-align:center}
+.wd.today{border-color:#c0305a;background:#1a0508}
+.wd.past{background:#0a1a0a;border-color:#1a2a1a}
+.wd-name{font-size:9px;color:#555;letter-spacing:1px;text-transform:uppercase;margin-bottom:4px}
+.wd.today .wd-name{color:#c0305a}
+.wd.past .wd-name{color:#4caf50}
+.wd-icon{font-size:16px}
+.progress-section{margin-bottom:28px}
+.progress-title{font-size:11px;color:#888;letter-spacing:2px;text-transform:uppercase;margin-bottom:12px}
+.p-row{display:flex;align-items:center;gap:12px;margin-bottom:8px}
+.p-label{font-size:12px;color:#888;width:160px;flex-shrink:0}
+.p-bg{flex:1;background:#1a1a1a;height:4px;border-radius:2px}
+.p-fill{height:4px;border-radius:2px;background:linear-gradient(90deg,#c0305a,#ff6b9d)}
+.p-val{font-size:12px;color:#ff6b9d;width:40px;text-align:right}
+.setup-card{background:#111;border:1px solid #1f1f1f;border-radius:8px;padding:20px;margin-bottom:16px}
+.setup-card h3{font-size:16px;font-weight:600;color:#ff6b9d;margin-bottom:8px}
+.setup-card p{font-size:13px;color:#888;line-height:1.6;margin-bottom:16px}
+.setup-btn{background:#c0305a;border:none;border-radius:8px;color:white;padding:14px 24px;font-size:15px;cursor:pointer;width:100%;font-weight:600;letter-spacing:1px}
+.s-row{display:flex;justify-content:space-between;align-items:center;padding:14px 0;border-bottom:1px solid #1a1a1a}
+.s-label{font-size:14px;color:#f0e6e6}
+.s-sub{font-size:12px;color:#555;margin-top:2px}
+.s-val{font-size:14px;color:#ff6b9d}
+.s-select{background:#1f1f1f;border:1px solid #2f2f2f;border-radius:6px;color:#f0e6e6;padding:8px 12px;font-size:14px}
+.s-input{background:#1f1f1f;border:1px solid #2f2f2f;border-radius:6px;color:#f0e6e6;padding:8px 12px;font-size:14px}
+.s-btn{background:#1a0508;border:1px solid #c0305a;color:#ff6b9d;padding:8px 16px;border-radius:6px;font-size:13px;cursor:pointer}
+.week-overview-card{background:#111;border:1px solid #1f1f1f;border-radius:8px;padding:14px 16px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center}
+.week-overview-card.today{border-color:#c0305a;background:#1a0508}
+.wo-day{font-size:12px;color:#666;letter-spacing:1px;text-transform:uppercase;margin-bottom:4px}
+.wo-focus{font-size:15px;font-weight:600;color:#f0e6e6}
+.wo-exercises{font-size:12px;color:#555;margin-top:4px}
+.type-badge{font-size:10px;padding:4px 10px;border-radius:4px;letter-spacing:1px;text-transform:uppercase}
+.type-weights{background:#1a0508;color:#ff6b9d}
+.type-pilates{background:#0a0a1a;color:#6b9dff}
+.type-hyrox{background:#1a1a0a;color:#ffc107}
+.type-rest{background:#1a1a1a;color:#555}
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#1a0508;border:1px solid #c0305a;border-radius:8px;padding:12px 20px;font-size:13px;color:#ff6b9d;opacity:0;transition:opacity 0.3s;z-index:999;white-space:nowrap;pointer-events:none}
+.toast.show{opacity:1}
+.safe{height:40px}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <div class="header-title">DIABOLIQUE</div>
+    <div class="header-day" id="hDay">Loading...</div>
+  </div>
+  <div style="text-align:right">
+    <div style="font-size:13px;color:#ff6b9d" id="hPhase">Phase 1</div>
+    <div style="font-size:11px;color:#555" id="hWeek">Week 1</div>
+  </div>
+</div>
+
+<div class="nav">
+  <button class="nav-btn active" onclick="showTab('today')">Today</button>
+  <button class="nav-btn" onclick="showTab('week')">This Week</button>
+  <button class="nav-btn" onclick="showTab('progress')">Progress</button>
+  <button class="nav-btn" onclick="showTab('settings')">Settings</button>
+</div>
+
+<div class="content">
+  <div id="tab-today">
+    <div class="week-strip" id="weekStrip"></div>
+    <div class="day-header">
+      <div class="day-phase" id="dPhase">Phase 1 — Week 1</div>
+      <div class="day-title" id="dTitle">Loading...</div>
+      <div class="day-focus" id="dFocus"></div>
+    </div>
+    <div class="timer-box" id="timerBox">
+      <div class="timer-num" id="timerNum">1:30</div>
+      <div class="timer-label">Rest Timer</div>
+      <button class="timer-skip" onclick="skipTimer()">Skip Rest</button>
+    </div>
+    <div class="complete-box" id="completeBox">
+      <div class="complete-title">Workout Complete 🖤</div>
+      <div class="complete-sub">Diabolique showed up today.</div>
+    </div>
+    <div id="exList"></div>
+  </div>
+
+  <div id="tab-week" style="display:none">
+    <div id="weekOverview"></div>
+  </div>
+
+  <div id="tab-progress" style="display:none">
+    <div class="progress-section">
+      <div class="progress-title">Program Progress</div>
+      <div class="p-row"><div class="p-label">Phase 1 (Wks 1-12)</div><div class="p-bg"><div class="p-fill" id="p1" style="width:0%"></div></div><div class="p-val" id="p1v">0%</div></div>
+      <div class="p-row"><div class="p-label">Phase 2 (Wks 13-24)</div><div class="p-bg"><div class="p-fill" id="p2" style="width:0%"></div></div><div class="p-val" id="p2v">0%</div></div>
+      <div class="p-row"><div class="p-label">Phase 3 (Wks 25-36)</div><div class="p-bg"><div class="p-fill" id="p3" style="width:0%"></div></div><div class="p-val" id="p3v">0%</div></div>
+      <div class="p-row"><div class="p-label">Phase 4 (Wks 37-48)</div><div class="p-bg"><div class="p-fill" id="p4" style="width:0%"></div></div><div class="p-val" id="p4v">0%</div></div>
+    </div>
+    <div class="progress-section">
+      <div class="progress-title">Key Lifts</div>
+      <div id="keyLifts"></div>
+    </div>
+    <div class="progress-section">
+      <div class="progress-title">Workouts Completed</div>
+      <div style="font-size:48px;font-weight:700;color:#ff6b9d" id="totalW">0</div>
+      <div style="font-size:12px;color:#555;letter-spacing:1px;text-transform:uppercase">Total Sessions</div>
+    </div>
+  </div>
+
+  <div id="tab-settings" style="display:none">
+    <div class="setup-card">
+      <h3>Push Notifications</h3>
+      <p>Get your daily 7am workout reminder. Add this page to your Home Screen first for the best experience.</p>
+      <button class="setup-btn" onclick="reqNotif()">Enable Daily Notifications</button>
+    </div>
+    <div class="setup-card">
+      <h3>Add to Home Screen</h3>
+      <p>In Safari tap the Share button then "Add to Home Screen" to install Diabolique as an app on your iPhone.</p>
+    </div>
+    <div class="s-row">
+      <div><div class="s-label">Notification Time</div><div class="s-sub">Daily reminder</div></div>
+      <select class="s-select" id="sNotif" onchange="saveSettings()">
+        <option value="6">6:00 AM</option>
+        <option value="7" selected>7:00 AM</option>
+        <option value="8">8:00 AM</option>
+        <option value="9">9:00 AM</option>
+      </select>
+    </div>
+    <div class="s-row">
+      <div><div class="s-label">Rest Timer</div><div class="s-sub">Between sets</div></div>
+      <select class="s-select" id="sRest" onchange="saveSettings()">
+        <option value="60">60 sec</option>
+        <option value="90" selected>90 sec</option>
+        <option value="120">2 min</option>
+        <option value="180">3 min</option>
+      </select>
+    </div>
+    <div class="s-row">
+      <div><div class="s-label">Manual Week</div><div class="s-sub">Set current week</div></div>
+      <select class="s-select" id="sWeek" onchange="applyManual()">
+        <option value="1">Week 1</option><option value="2">Week 2</option><option value="3">Week 3</option><option value="4">Week 4</option><option value="5">Week 5</option><option value="6">Week 6</option><option value="7">Week 7</option><option value="8">Week 8</option><option value="9">Week 9</option><option value="10">Week 10</option><option value="11">Week 11</option><option value="12">Week 12</option><option value="13">Week 13</option><option value="14">Week 14</option><option value="15">Week 15</option><option value="16">Week 16</option><option value="17">Week 17</option><option value="18">Week 18</option><option value="19">Week 19</option><option value="20">Week 20</option><option value="21">Week 21</option><option value="22">Week 22</option><option value="23">Week 23</option><option value="24">Week 24</option><option value="25">Week 25</option><option value="26">Week 26</option><option value="27">Week 27</option><option value="28">Week 28</option><option value="29">Week 29</option><option value="30">Week 30</option><option value="31">Week 31</option><option value="32">Week 32</option><option value="33">Week 33</option><option value="34">Week 34</option><option value="35">Week 35</option><option value="36">Week 36</option><option value="37">Week 37</option><option value="38">Week 38</option><option value="39">Week 39</option><option value="40">Week 40</option><option value="41">Week 41</option><option value="42">Week 42</option><option value="43">Week 43</option><option value="44">Week 44</option><option value="45">Week 45</option><option value="46">Week 46</option><option value="47">Week 47</option><option value="48">Week 48</option>
+      </select>
+    </div>
+    <div class="s-row">
+      <div><div class="s-label">Manual Phase</div><div class="s-sub">Set current phase</div></div>
+      <select class="s-select" id="sPhase" onchange="applyManual()">
+        <option value="1">Phase 1</option>
+        <option value="2">Phase 2</option>
+        <option value="3">Phase 3</option>
+        <option value="4">Phase 4</option>
+      </select>
+    </div>
+    <div class="s-row">
+      <div><div class="s-label">Start Date</div><div class="s-sub">Override program start</div></div>
+      <input type="date" class="s-input" id="sDate" onchange="applyDate()">
+    </div>
+    <div class="s-row" style="border:none">
+      <div><div class="s-label">Reset Program</div><div class="s-sub">Back to Week 1 Day 1</div></div>
+      <button class="s-btn" onclick="resetProg()">Reset</button>
+    </div>
+  </div>
+
+  <div class="safe"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── WEIGHTS ──────────────────────────────────────────────────
+var W = {
+  'Hip Thrusts':{w:150,u:'lbs',t:'bar'},
+  'Romanian Deadlifts':{w:30,u:'lbs each',t:'db'},
+  'Bulgarian Split Squats':{w:25,u:'lbs each',t:'db'},
+  'Leg Press':{w:270,u:'lbs',t:'machine'},
+  'Sumo Squats':{w:135,u:'lbs',t:'bar'},
+  'Glute Bridges':{w:35,u:'lbs',t:'db'},
+  'Cable Kickbacks':{w:60,u:'lbs',t:'cable'},
+  'Hip Abductions':{w:130,u:'lbs',t:'machine'},
+  'Leg Curls':{w:50,u:'lbs',t:'machine'},
+  'Leg Extension':{w:100,u:'lbs',t:'machine'},
+  'Calf Raises':{w:90,u:'lbs',t:'machine'},
+  'Step Ups':{w:35,u:'lbs each',t:'db'},
+  'Goblet Squats':{w:45,u:'lbs',t:'db'},
+  'Walking Lunges':{w:25,u:'lbs each',t:'db'},
+  'Shoulder Press':{w:15,u:'lbs each',t:'db'},
+  'Lateral Raises':{w:10,u:'lbs each',t:'db'},
+  'Chest Press':{w:45,u:'lbs each',t:'db'},
+  'Incline Dumbbell Press':{w:35,u:'lbs each',t:'db'},
+  'Tricep Dips':{w:0,u:'bodyweight',t:'bw'},
+  'Tricep Overhead Extension':{w:25,u:'lbs',t:'db'},
+  'Cable Tricep Pushdowns':{w:60,u:'lbs',t:'cable'},
+  'Arnold Press':{w:30,u:'lbs each',t:'db'},
+  'Pull Ups':{w:0,u:'bodyweight',t:'bw'},
+  'Dumbbell Rows':{w:30,u:'lbs each',t:'db'},
+  'Cable Rows':{w:90,u:'lbs',t:'cable'},
+  'Bicep Curls':{w:25,u:'lbs each',t:'db'},
+  'Hammer Curls':{w:25,u:'lbs each',t:'db'},
+  'Face Pulls':{w:45,u:'lbs',t:'cable'},
+  'Lat Pulldown':{w:100,u:'lbs',t:'cable'},
+  'Reverse Flys':{w:30,u:'lbs each',t:'db'},
+  'Straight Arm Pulldown':{w:50,u:'lbs',t:'cable'},
+  'Shrugs':{w:35,u:'lbs each',t:'db'},
+  'Cable Crunches':{w:50,u:'lbs',t:'cable'},
+  'Pallof Press':{w:50,u:'lbs',t:'cable'},
+  'Hanging Leg Raises':{w:0,u:'bodyweight',t:'bw'},
+  'Ab Wheel':{w:0,u:'bodyweight',t:'bw'},
+  'Russian Twists':{w:10,u:'lbs',t:'db'},
+  'Conventional Deadlift':{w:135,u:'lbs',t:'bar'},
+  'Single Leg RDL':{w:30,u:'lbs each',t:'db'},
+  'Farmers Carry':{w:35,u:'lbs each',t:'db'},
+  'Wall Balls':{w:10,u:'lbs',t:'ball'},
+  'Sandbag Lunges':{w:35,u:'lbs',t:'bag'},
+  'Rowing Machine':{w:0,u:'damper 5',t:'cardio'},
+  'Ski Erg':{w:0,u:'bodyweight',t:'cardio'}
+};
+
+// ── PROGRAM ───────────────────────────────────────────────────
+var P = [
+  // PHASE 1
+  {day:'Monday',phase:1,focus:'Glutes & Hamstrings',type:'weights',ex:[
+    {n:'Hip Thrusts',s:4,r:15},{n:'Romanian Deadlifts',s:3,r:10},
+    {n:'Cable Kickbacks',s:3,r:15,note:'Each side'},{n:'Sumo Squats',s:3,r:12}]},
+  {day:'Tuesday',phase:1,focus:'Upper Body Push',type:'weights',ex:[
+    {n:'Chest Press',s:3,r:12},{n:'Shoulder Press',s:3,r:12},
+    {n:'Lateral Raises',s:3,r:15},{n:'Tricep Dips',s:3,r:12},{n:'Tricep Overhead Extension',s:3,r:12}]},
+  {day:'Wednesday',phase:1,focus:'Reformer Pilates',type:'pilates',ex:[],notes:[
+    'Beginner class — tell instructor you are new',
+    'Footwork series for calf and ankle strength',
+    'Hundred exercise — core activation and breath control',
+    'Leg circles — hip mobility and glute activation',
+    'Elephant — hamstring flexibility and core stability']},
+  {day:'Thursday',phase:1,focus:'Legs & Glutes',type:'weights',ex:[
+    {n:'Bulgarian Split Squats',s:3,r:10,note:'Each side'},{n:'Leg Press',s:3,r:15},
+    {n:'Hip Abductions',s:3,r:20},{n:'Glute Bridges',s:4,r:20},{n:'Calf Raises',s:3,r:20}]},
+  {day:'Friday',phase:1,focus:'Upper Body Pull',type:'weights',ex:[
+    {n:'Pull Ups',s:3,r:8},{n:'Dumbbell Rows',s:3,r:12,note:'Each side'},
+    {n:'Face Pulls',s:3,r:15},{n:'Bicep Curls',s:3,r:12},{n:'Reverse Flys',s:3,r:12}]},
+  {day:'Saturday',phase:1,focus:'Core & Conditioning',type:'weights',ex:[
+    {n:'Hanging Leg Raises',s:3,r:12},{n:'Cable Crunches',s:3,r:15},
+    {n:'Pallof Press',s:3,r:12,note:'Each side'},{n:'Ab Wheel',s:3,r:10},{n:'Russian Twists',s:3,r:20}]},
+  {day:'Sunday',phase:1,focus:'Rest Day',type:'rest',ex:[],notes:[
+    'Full rest — your body repairs and grows on rest days',
+    'Light walk if desired — 20-30 minutes maximum',
+    'Foam rolling and stretching encouraged',
+    'Extra hydration — 4 liters today',
+    'Prep your meals for the week']},
+  // PHASE 2
+  {day:'Monday',phase:2,focus:'Glutes & Hamstrings',type:'weights',ex:[
+    {n:'Hip Thrusts',s:4,r:12,note:'Increase weight'},{n:'Single Leg RDL',s:3,r:10,note:'Each side'},
+    {n:'Cable Kickbacks',s:3,r:15,note:'Each side'},{n:'Walking Lunges',s:3,r:12,note:'Each side'}]},
+  {day:'Tuesday',phase:2,focus:'Upper Body Push',type:'weights',ex:[
+    {n:'Incline Dumbbell Press',s:3,r:12},{n:'Arnold Press',s:3,r:12},
+    {n:'Lateral Raises',s:3,r:15},{n:'Tricep Overhead Extension',s:3,r:12},{n:'Cable Tricep Pushdowns',s:3,r:12}]},
+  {day:'Wednesday',phase:2,focus:'Reformer Pilates',type:'pilates',ex:[],notes:[
+    'Intermediate class',
+    'Side lying series — hip abductors and outer glutes',
+    'Long stretch series — full body strength',
+    'Mermaid stretch — waist and lateral flexibility',
+    'Kneeling series — glute isolation and balance']},
+  {day:'Thursday',phase:2,focus:'Legs & Glutes',type:'weights',ex:[
+    {n:'Leg Press',s:3,r:15},{n:'Walking Lunges',s:3,r:12,note:'Each side'},
+    {n:'Leg Curls',s:3,r:15},{n:'Hip Abductions',s:3,r:20},{n:'Calf Raises',s:3,r:20}]},
+  {day:'Friday',phase:2,focus:'Upper Body Pull',type:'weights',ex:[
+    {n:'Pull Ups',s:3,r:8},{n:'Cable Rows',s:3,r:12},
+    {n:'Reverse Flys',s:3,r:15},{n:'Hammer Curls',s:3,r:12},{n:'Lat Pulldown',s:3,r:12}]},
+  {day:'Saturday',phase:2,focus:'Hyrox Introduction',type:'hyrox',hNote:'Run 2km easy first. Keep it light — learn the movements.',ex:[
+    {n:'Rowing Machine',s:3,r:0,note:'500m each'},{n:'Farmers Carry',s:4,r:0,note:'40m each'},
+    {n:'Wall Balls',s:3,r:20},{n:'Hanging Leg Raises',s:3,r:12}]},
+  {day:'Sunday',phase:2,focus:'Reformer Pilates',type:'pilates',ex:[],notes:[
+    'Intermediate class — second session this week',
+    'Coordination exercise — core and arm integration',
+    'Swan dive — spinal mobility',
+    'Side splits — hip flexibility',
+    'Full body stretch and cool down']},
+  // PHASE 3
+  {day:'Monday',phase:3,focus:'Glutes & Hamstrings',type:'weights',ex:[
+    {n:'Hip Thrusts',s:4,r:15,note:'Smith machine'},{n:'Romanian Deadlifts',s:3,r:12},
+    {n:'Glute Bridges',s:3,r:20},{n:'Hip Abductions',s:3,r:20}]},
+  {day:'Tuesday',phase:3,focus:'Hyrox Run & Cardio',type:'hyrox',hNote:'Run 5km at moderate pace first. Then complete station work.',ex:[
+    {n:'Ski Erg',s:3,r:0,note:'500m each'},{n:'Rowing Machine',s:3,r:0,note:'500m each'}]},
+  {day:'Wednesday',phase:3,focus:'Reformer Pilates',type:'pilates',ex:[],notes:[
+    'Advanced footwork with spring resistance changes',
+    'Jump board — cardio on the reformer',
+    'Full side split series — hip and inner thigh',
+    'Tree exercise — hip flexor release',
+    'Control balance — advanced core work']},
+  {day:'Thursday',phase:3,focus:'Legs & Glutes',type:'weights',ex:[
+    {n:'Goblet Squats',s:4,r:15},{n:'Step Ups',s:3,r:12,note:'Each side'},
+    {n:'Leg Extension',s:3,r:15},{n:'Leg Curls',s:3,r:15},{n:'Calf Raises',s:3,r:20}]},
+  {day:'Friday',phase:3,focus:'Upper Body Pull',type:'weights',ex:[
+    {n:'Dumbbell Rows',s:3,r:12,note:'Each side'},{n:'Face Pulls',s:4,r:15},
+    {n:'Bicep Curls',s:3,r:15},{n:'Straight Arm Pulldown',s:3,r:15},{n:'Shrugs',s:3,r:15}]},
+  {day:'Saturday',phase:3,focus:'Hyrox Circuit',type:'hyrox',hNote:'Run 1km before each round. Complete 2 rounds with 3 min rest between.',ex:[
+    {n:'Rowing Machine',s:2,r:0,note:'500m each round'},{n:'Wall Balls',s:2,r:25},
+    {n:'Farmers Carry',s:2,r:0,note:'100m each round'},{n:'Sandbag Lunges',s:2,r:0,note:'20m each round'}]},
+  {day:'Sunday',phase:3,focus:'Reformer Pilates',type:'pilates',ex:[],notes:[
+    'Third pilates session this week if energy allows',
+    'Jump board 15 minutes',
+    'Focus on hip and lower back mobility',
+    'Full body cool down and stretch',
+    'Private session this month — ask instructor to assess form']},
+  // PHASE 4
+  {day:'Monday',phase:4,focus:'Glutes & Power',type:'weights',ex:[
+    {n:'Hip Thrusts',s:5,r:10,note:'Heavy'},{n:'Conventional Deadlift',s:3,r:8},
+    {n:'Cable Kickbacks',s:3,r:15,note:'Each side'},{n:'Glute Bridges',s:4,r:20,note:'Banded finisher'}]},
+  {day:'Tuesday',phase:4,focus:'Hyrox Full Stations',type:'hyrox',hNote:'Full station practice. Run 1km between each station. Race simulation.',ex:[
+    {n:'Ski Erg',s:1,r:0,note:'1000m race pace'},{n:'Rowing Machine',s:1,r:0,note:'1000m race pace'},
+    {n:'Wall Balls',s:1,r:50},{n:'Farmers Carry',s:1,r:0,note:'200m total'},{n:'Sandbag Lunges',s:1,r:0,note:'40m total'}]},
+  {day:'Wednesday',phase:4,focus:'Reformer Pilates',type:'pilates',ex:[],notes:[
+    'Advanced full flow class',
+    'Jump board twice per session',
+    'Tower work if available',
+    'Rowing series — upper body functional strength',
+    'Private session once this month']},
+  {day:'Thursday',phase:4,focus:'Legs & Glutes',type:'weights',ex:[
+    {n:'Bulgarian Split Squats',s:3,r:10,note:'Heavy'},{n:'Romanian Deadlifts',s:4,r:10},
+    {n:'Leg Press',s:4,r:12,note:'Heavy'},{n:'Hip Abductions',s:3,r:20},{n:'Calf Raises',s:4,r:20}]},
+  {day:'Friday',phase:4,focus:'Run & Hyrox Cardio',type:'hyrox',hNote:'Run 6-8km at race pace first. Then complete station work.',ex:[
+    {n:'Rowing Machine',s:1,r:0,note:'1000m post run'},{n:'Farmers Carry',s:3,r:0,note:'40m each'},{n:'Wall Balls',s:2,r:25}]},
+  {day:'Saturday',phase:4,focus:'Full Hyrox Simulation',type:'hyrox',hNote:'FULL RACE SIMULATION. 8x1km runs with all 8 stations. Time yourself.',ex:[
+    {n:'Rowing Machine',s:1,r:0,note:'1000m race pace'},{n:'Ski Erg',s:1,r:0,note:'1000m race pace'},
+    {n:'Wall Balls',s:1,r:75},{n:'Farmers Carry',s:1,r:0,note:'200m total'},{n:'Sandbag Lunges',s:1,r:0,note:'100m total'}]},
+  {day:'Sunday',phase:4,focus:'Reformer Pilates',type:'pilates',ex:[],notes:[
+    'Recovery pilates — medium intensity',
+    'Focus on hip flexor and lower back release',
+    'Jump board light — 10 minutes only',
+    'Full body stretch sequence',
+    'You earned this — show up fully tomorrow']}
+];
+
+// ── CARDIO ────────────────────────────────────────────────────
+var C = {
+  1:{Monday:{c:'Daily Walk',d:'20-30 min',i:'Easy'},Tuesday:{c:'Daily Walk',d:'20-30 min',i:'Easy'},Wednesday:{c:'Rowing or Cycling',d:'20 min',i:'Moderate'},Thursday:{c:'Daily Walk',d:'20-30 min',i:'Easy'},Friday:{c:'Daily Walk',d:'20-30 min',i:'Easy'},Saturday:{c:'Daily Walk',d:'20-30 min',i:'Easy'},Sunday:{c:'Recovery Walk',d:'30 min',i:'Easy'}},
+  2:{Monday:{c:'Daily Walk',d:'30 min',i:'Easy'},Tuesday:{c:'Run',d:'2-3km',i:'Conversational'},Wednesday:{c:'Rowing Machine',d:'20 min',i:'Moderate'},Thursday:{c:'Daily Walk',d:'30 min',i:'Easy'},Friday:{c:'Run',d:'2-3km',i:'Conversational'},Saturday:{c:'Hyrox Run',d:'2km',i:'Easy'},Sunday:{c:'Recovery Walk',d:'30 min',i:'Easy'}},
+  3:{Monday:{c:'Daily Walk',d:'30 min',i:'Easy'},Tuesday:{c:'Run + Cardio',d:'5km run',i:'Moderate'},Wednesday:{c:'Jump Board',d:'15 min',i:'Moderate'},Thursday:{c:'Daily Walk',d:'30 min',i:'Easy'},Friday:{c:'Run',d:'4-5km',i:'Moderate'},Saturday:{c:'Hyrox Circuit',d:'1km per round',i:'Race pace'},Sunday:{c:'Jump Board',d:'10 min',i:'Easy'}},
+  4:{Monday:{c:'Daily Walk',d:'30 min',i:'Easy'},Tuesday:{c:'Hyrox Stations',d:'1km between each',i:'Race pace'},Wednesday:{c:'Jump Board',d:'20 min',i:'Moderate'},Thursday:{c:'Daily Walk',d:'30 min',i:'Easy'},Friday:{c:'Long Run',d:'6-8km',i:'Race pace'},Saturday:{c:'Full Race Sim',d:'8x1km',i:'Race pace'},Sunday:{c:'Jump Board',d:'10 min',i:'Easy'}}
+};
+
+// ── STATE ─────────────────────────────────────────────────────
+var S = {
+  startDate: new Date().toISOString().split('T')[0],
+  weights: {},
+  done: {},
+  sets: {},
+  settings: {notif:7, rest:90}
+};
+
+function loadS() {
+  try {
+    var saved = localStorage.getItem('dq_state');
+    if (saved) {
+      var parsed = JSON.parse(saved);
+      S = Object.assign(S, parsed);
+    }
+  } catch(e) {}
+  // Always ensure weights are set
+  if (!S.weights || Object.keys(S.weights).length === 0) {
+    S.weights = {};
+    for (var k in W) S.weights[k] = W[k].w;
+  }
+}
+
+function saveS() {
+  try { localStorage.setItem('dq_state', JSON.stringify(S)); } catch(e) {}
+}
+
+// ── PROGRAM DAY ───────────────────────────────────────────────
+function getDay() {
+  var start = new Date(S.startDate);
+  var today = new Date();
+  var diff = Math.max(0, Math.floor((today - start) / 86400000));
+  var week = Math.floor(diff / 7) + 1;
+  var phase = week <= 12 ? 1 : week <= 24 ? 2 : week <= 36 ? 3 : 4;
+  var pStart = (phase - 1) * 7;
+  // Map JS day (0=Sun) to program index (0=Mon)
+  var jsDay = today.getDay();
+  var pDay = jsDay === 0 ? 6 : jsDay - 1;
+  var idx = pStart + pDay;
+  var workout = P[Math.min(idx, P.length - 1)];
+  return {workout:workout, week:week, phase:phase, pDay:pDay};
+}
+
+// ── TAB SWITCHING ─────────────────────────────────────────────
+function showTab(t) {
+  var tabs = ['today','week','progress','settings'];
+  for (var i=0;i<tabs.length;i++) {
+    document.getElementById('tab-'+tabs[i]).style.display = t===tabs[i] ? 'block' : 'none';
+  }
+  var btns = document.querySelectorAll('.nav-btn');
+  for (var i=0;i<btns.length;i++) {
+    btns[i].classList.toggle('active', tabs[i]===t);
+  }
+  if (t==='progress') renderProgress();
+  if (t==='week') renderWeek();
+  if (t==='settings') initSettings();
+}
+
+// ── WEEK STRIP ────────────────────────────────────────────────
+function renderStrip() {
+  var strip = document.getElementById('weekStrip');
+  var labels = ['S','M','T','W','T','F','S'];
+  var today = new Date().getDay();
+  var html = '';
+  for (var i=0;i<7;i++) {
+    var cls = i===today ? 'today' : i<today ? 'past' : '';
+    var icon = i===today ? '💪' : i<today ? '✓' : '·';
+    html += '<div class="wd '+cls+'"><div class="wd-name">'+labels[i]+'</div><div class="wd-icon">'+icon+'</div></div>';
+  }
+  strip.innerHTML = html;
+}
+
+// ── TODAY ─────────────────────────────────────────────────────
+function renderToday() {
+  var d = getDay();
+  var w = d.workout;
+  if (!w) { document.getElementById('dTitle').textContent = 'Set start date in Settings'; return; }
+
+  var dayNames = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  var todayName = dayNames[new Date().getDay()];
+
+  document.getElementById('hDay').textContent = todayName + ' · ' + new Date().toLocaleDateString('en-US',{month:'short',day:'numeric'});
+  document.getElementById('hPhase').textContent = 'Phase ' + d.phase;
+  document.getElementById('hWeek').textContent = 'Week ' + d.week;
+  document.getElementById('dPhase').textContent = 'Phase ' + d.phase + ' — Week ' + d.week;
+  document.getElementById('dTitle').textContent = w.focus;
+  document.getElementById('dFocus').textContent = todayName;
+
+  var html = '';
+
+  // Cardio card
+  var cardio = C[d.phase] && C[d.phase][todayName];
+  if (cardio) {
+    html += '<div class="cardio-card"><div><div class="cardio-label">Cardio Today</div><div class="cardio-name">'+cardio.c+'</div></div><div><div class="cardio-duration">'+cardio.d+'</div><div class="cardio-intensity">'+cardio.i+'</div></div></div>';
+  }
+
+  if (w.type === 'rest') {
+    html += '<div class="info-card"><h3 class="rest-title">Rest Day 🖤</h3><p>';
+    for (var i=0;i<w.notes.length;i++) html += '• ' + w.notes[i] + '<br>';
+    html += '</p></div>';
+  } else if (w.type === 'pilates') {
+    html += '<div class="info-card"><h3 class="pilates-title">Reformer Pilates Today</h3><p>';
+    for (var i=0;i<w.notes.length;i++) html += '• ' + w.notes[i] + '<br>';
+    html += '</p></div>';
+  } else {
+    if (w.type === 'hyrox' && w.hNote) {
+      html += '<div class="info-card"><h3 class="hyrox-title">Hyrox Session</h3><p>' + w.hNote + '</p></div>';
+    }
+    for (var i=0;i<w.ex.length;i++) {
+      html += buildExCard(w.ex[i], i, w.type);
+    }
+  }
+
+  document.getElementById('exList').innerHTML = html;
+  checkComplete();
+}
+
+function buildExCard(ex, idx, type) {
+  var wData = W[ex.n] || {w:0,u:'lbs',t:'db'};
+  var weight = S.weights[ex.n] !== undefined ? S.weights[ex.n] : wData.w;
+  var unit = wData.u;
+  var isBW = unit === 'bodyweight';
+  var isCardio = wData.t === 'cardio';
+  var dateKey = new Date().toISOString().split('T')[0];
+  var cardCls = type === 'hyrox' ? 'ex-card hyrox' : 'ex-card';
+
+  var html = '<div class="'+cardCls+'">';
+  html += '<div class="ex-header"><div>';
+  html += '<div class="ex-name">'+ex.n+'</div>';
+  html += '<div class="ex-meta">'+ex.s+' sets'+(ex.r>0?' × '+ex.r+' reps':'')+(ex.note?' · '+ex.note:'')+'</div>';
+  html += '</div><div>';
+  if (!isBW && !isCardio) {
+    html += '<div class="ex-weight">'+weight+'</div><div class="ex-unit">'+unit+'</div>';
+  } else {
+    html += '<div style="font-size:13px;color:#888;text-align:right">'+unit+'</div>';
+  }
+  html += '</div></div>';
+
+  // Sets
+  html += '<div class="sets-grid">';
+  for (var s=0;s<ex.s;s++) {
+    var setKey = dateKey+'_'+ex.n+'_'+s;
+    var done = S.sets[setKey] ? 'done' : '';
+    html += '<div class="set-box '+done+'" onclick="toggleSet(\''+dateKey+'\',\''+ex.n+'\','+s+','+ex.s+')">';
+    html += '<div class="set-num">Set '+(s+1)+'</div>';
+    html += '<div class="set-reps">'+(ex.r>0?ex.r:'—')+'</div>';
+    html += '<div class="set-check">✓</div></div>';
+  }
+  html += '</div>';
+
+  // Weight controls
+  if (!isBW && !isCardio) {
+    var safeN = ex.n.replace(/[^a-z0-9]/gi,'_');
+    html += '<div class="w-row">';
+    html += '<button class="w-btn" onclick="adjW(\''+ex.n+'\',-2.5)">−</button>';
+    html += '<input class="w-input" type="number" value="'+weight+'" id="wi_'+safeN+'" onchange="setW(\''+ex.n+'\',this.value)">';
+    html += '<div class="w-unit">'+unit+'</div>';
+    html += '<button class="w-btn" onclick="adjW(\''+ex.n+'\',2.5)">+</button>';
+    html += '</div>';
+  }
+
+  html += '</div>';
+  return html;
+}
+
+// ── SET TOGGLE ────────────────────────────────────────────────
+function toggleSet(dateKey, name, setNum, totalSets) {
+  var key = dateKey+'_'+name+'_'+setNum;
+  S.sets[key] = !S.sets[key];
+  saveS();
+
+  // Check if all sets for this exercise done
+  var allDone = true;
+  for (var i=0;i<totalSets;i++) {
+    if (!S.sets[dateKey+'_'+name+'_'+i]) { allDone = false; break; }
+  }
+  if (allDone) { startTimer(); toast(name + ' complete 🖤'); }
+
+  renderToday();
+}
+
+function checkComplete() {
+  var d = getDay();
+  var w = d.workout;
+  if (!w || !w.ex || w.ex.length === 0) return;
+  var dateKey = new Date().toISOString().split('T')[0];
+  var allDone = true;
+  for (var i=0;i<w.ex.length;i++) {
+    for (var s=0;s<w.ex[i].s;s++) {
+      if (!S.sets[dateKey+'_'+w.ex[i].n+'_'+s]) { allDone = false; break; }
+    }
+    if (!allDone) break;
+  }
+  var box = document.getElementById('completeBox');
+  if (allDone) {
+    box.classList.add('show');
+    S.done[dateKey] = true;
+    saveS();
+  }
+}
+
+// ── WEIGHT CONTROLS ───────────────────────────────────────────
+function adjW(name, amt) {
+  S.weights[name] = Math.max(0, (S.weights[name] || 0) + amt);
+  saveS();
+  renderToday();
+}
+
+function setW(name, val) {
+  S.weights[name] = parseFloat(val) || 0;
+  saveS();
+}
+
+// ── TIMER ─────────────────────────────────────────────────────
+var timerInterval = null;
+var timerSecs = 90;
+
+function startTimer() {
+  timerSecs = parseInt(S.settings.rest) || 90;
+  document.getElementById('timerBox').classList.add('active');
+  clearInterval(timerInterval);
+  updateTimerDisplay();
+  timerInterval = setInterval(function() {
+    timerSecs--;
+    updateTimerDisplay();
+    if (timerSecs <= 0) {
+      clearInterval(timerInterval);
+      document.getElementById('timerBox').classList.remove('active');
+      toast('Rest done — next set! 💪');
+    }
+  }, 1000);
+}
+
+function updateTimerDisplay() {
+  var m = Math.floor(timerSecs/60);
+  var s = timerSecs % 60;
+  document.getElementById('timerNum').textContent = m+':'+(s<10?'0':'')+s;
+}
+
+function skipTimer() {
+  clearInterval(timerInterval);
+  document.getElementById('timerBox').classList.remove('active');
+}
+
+// ── PROGRESS ──────────────────────────────────────────────────
+function renderProgress() {
+  var d = getDay();
+  var phases = [{id:1,start:1},{id:2,start:13},{id:3,start:25},{id:4,start:37}];
+  for (var i=0;i<phases.length;i++) {
+    var pct = Math.min(100, Math.max(0, ((d.week - phases[i].start) / 12) * 100));
+    document.getElementById('p'+phases[i].id).style.width = pct+'%';
+    document.getElementById('p'+phases[i].id+'v').textContent = Math.round(pct)+'%';
+  }
+  document.getElementById('totalW').textContent = Object.keys(S.done).length;
+
+  var lifts = ['Hip Thrusts','Conventional Deadlift','Shoulder Press','Pull Ups','Leg Press'];
+  var html = '';
+  for (var i=0;i<lifts.length;i++) {
+    var base = W[lifts[i]] ? W[lifts[i]].w : 0;
+    var cur = S.weights[lifts[i]] !== undefined ? S.weights[lifts[i]] : base;
+    var inc = cur - base;
+    var u = W[lifts[i]] ? W[lifts[i]].u : 'lbs';
+    html += '<div class="p-row"><div class="p-label">'+lifts[i]+'</div>';
+    html += '<div style="flex:1;font-size:13px;color:#ff6b9d">'+cur+' '+u+'</div>';
+    html += '<div style="font-size:12px;color:'+(inc>0?'#4caf50':'#555')+'">'+( inc>0 ? '+'+inc : '—')+'</div></div>';
+  }
+  document.getElementById('keyLifts').innerHTML = html;
+}
+
+// ── WEEK OVERVIEW ─────────────────────────────────────────────
+function renderWeek() {
+  var d = getDay();
+  var pStart = (d.phase - 1) * 7;
+  var weekDays = P.slice(pStart, pStart + 7);
+  var todayName = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][new Date().getDay()];
+  var html = '<div style="font-size:11px;color:#666;letter-spacing:2px;text-transform:uppercase;margin-bottom:16px">Phase '+d.phase+' — Week '+d.week+'</div>';
+  for (var i=0;i<weekDays.length;i++) {
+    var wd = weekDays[i];
+    var isToday = wd.day === todayName;
+    var typeCls = 'type-'+wd.type;
+    html += '<div class="week-overview-card'+(isToday?' today':'')+'"><div>';
+    html += '<div class="wo-day">'+wd.day+'</div>';
+    html += '<div class="wo-focus">'+wd.focus+'</div>';
+    if (wd.ex && wd.ex.length > 0) {
+      var names = [];
+      for (var j=0;j<Math.min(3,wd.ex.length);j++) names.push(wd.ex[j].n);
+      html += '<div class="wo-exercises">'+names.join(' · ')+'</div>';
+    }
+    html += '</div><div class="type-badge '+typeCls+'">'+wd.type+'</div></div>';
+  }
+  document.getElementById('weekOverview').innerHTML = html;
+}
+
+// ── SETTINGS ──────────────────────────────────────────────────
+function initSettings() {
+  document.getElementById('sDate').value = S.startDate || '';
+  var d = getDay();
+  document.getElementById('sWeek').value = Math.min(d.week, 48);
+  document.getElementById('sPhase').value = d.phase;
+}
+
+function saveSettings() {
+  S.settings.notif = parseInt(document.getElementById('sNotif').value);
+  S.settings.rest = parseInt(document.getElementById('sRest').value);
+  saveS();
+  toast('Settings saved 🖤');
+}
+
+function applyManual() {
+  var week = parseInt(document.getElementById('sWeek').value);
+  var phase = parseInt(document.getElementById('sPhase').value);
+  var totalWeeks = ((phase - 1) * 12) + (week - 1);
+  var today = new Date();
+  var newStart = new Date(today);
+  newStart.setDate(today.getDate() - (totalWeeks * 7));
+  S.startDate = newStart.toISOString().split('T')[0];
+  saveS();
+  renderToday();
+  renderStrip();
+  toast('Set to Phase '+phase+' Week '+week+' 🖤');
+}
+
+function applyDate() {
+  var val = document.getElementById('sDate').value;
+  if (val) { S.startDate = val; saveS(); renderToday(); renderStrip(); toast('Start date updated 🖤'); }
+}
+
+function resetProg() {
+  if (confirm('Reset to Week 1 Day 1?')) {
+    S.startDate = new Date().toISOString().split('T')[0];
+    S.done = {}; S.sets = {};
+    S.weights = {};
+    for (var k in W) S.weights[k] = W[k].w;
+    saveS(); renderToday(); renderStrip();
+    toast('Reset to Week 1 🖤');
+  }
+}
+
+// ── NOTIFICATIONS ─────────────────────────────────────────────
+function reqNotif() {
+  if (!('Notification' in window)) { toast('Open in Safari for notifications'); return; }
+  Notification.requestPermission().then(function(p) {
+    if (p === 'granted') { toast('Notifications enabled 🖤'); }
+    else { toast('Enable in iPhone Settings > Safari'); }
+  });
+}
+
+// ── TOAST ─────────────────────────────────────────────────────
+function toast(msg) {
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(function(){ t.classList.remove('show'); }, 2500);
+}
+
+// ── INIT ──────────────────────────────────────────────────────
+loadS();
+renderStrip();
+renderToday();
+</script>
+</body>
+</html>
